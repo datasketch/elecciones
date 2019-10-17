@@ -26,8 +26,8 @@ body {
 
 .title {
   font-weight: 800;
-  font-size: 40px;
-  letter-spacing: 0.1em;
+  font-size: 25px;
+  letter-spacing: 0.05em;
   margin: 0;
   text-transform: uppercase;
 }
@@ -63,6 +63,10 @@ body {
   display: flex;
 }
 
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
 .justify-between {
   justify-content: space-between;
 }
@@ -86,9 +90,137 @@ body {
   width: 100%;
 }
 
+.filters {
+  padding: 50px 0;
+}
+
+.selectize-input {
+  color: #0A446B !important;
+  border: 1px solid;/*none !important;*/
+  font-weight: 800 !important;
+  font-size: 25px !important;
+  letter-spacing: 0.05em !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-transform: uppercase !important;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.filter-output {
+  margin-bottom: 11px;
+  width: 100%;
+}
+
+.titles-filters {
+ font-size: 22px;
+ font-weight: 400;
+ margin: 0 0 12px;
+ text-transform: uppercase
+}
+
+
+.selectize-control.single .selectize-input:after {
+  top: 6px !important;
+  right: 7px !important;
+  margin-top: 0px !important;
+  border-width: 7px 7px 0 7px !important;
+  border-color: #0A446B transparent transparent transparent  !important;
+}
+
+
+.selectize-dropdown-content .active {
+ background: #2196f3 !important;
+ color: white !important;
+}
+
+.input-active {
+ background: #2196f3 !important;
+ padding: 0px !important;
+ margin: 0px !important;
+}
+
+.summary {
+ background: #F8F8F8;
+ box-shadow: inset 0px 3px 3px 0 rgba(0,0,0, 0.1);
+ padding: 50px 0px;
+}
+
+
+.results {
+  display: grid;
+  grid-template-columns: 0.6fr 0.4fr;
+  grid-template-rows: repeat(4, 1fr);
+  grid-template-areas: "red datos" 
+                       "red secop"
+                       "red otros"
+                       "tabla tabla";
+ grid-gap: 25px;
+}
+
+.red {
+  grid-area: red;
+}
+
+
+.contributor {
+  grid-area: datos;
+}
+
+.contracting {
+  grid-area: secop;
+}
+
+
+.others {
+  grid-area: otros;
+}
+
+
+.table {
+  grid-area: tabla;
+}
+
+
+.panel {
+  background-color: #FFFFFF;
+  border-radius: 3px;
+  box-shadow: 3px 3px 10px 0 rgba(0,0,0, 0.1);
+  padding: 25px;
+}
+
+h4 {
+ color: #cccccc;
+ letter-spacing: 0.05em !important;
+ margin-top: 0px !important;
+ text-transform: uppercase !important;
+}
+
+@media screen and (min-width:768px) {
+  
+.title {
+  font-size: 35px;
+}
+
+.filter-output {
+  width: 30%;
+  margin-bottom: 0px;
+}
+
+.selectize-input {
+  font-size: 35px !important;
+}
+}
 
 @media screen and (min-width:992px) {
   .texto_busqueda {
     display: block;
   }
+  
 }
+
+
+
