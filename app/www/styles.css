@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway:400,800&display=swap');
+
+*,
+*:before,
+*:after{
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+  font-family: 'Raleway', sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.bg-blue {
+  background-color: #0A446B;
+}
+
+.content {
+  margin: 0 auto;
+  width: 90%;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 40px;
+  letter-spacing: 0.1em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.text-aqua {
+  color: #137FC0;
+}
+
+.text-blue  {
+  color: #0A446B;
+}
+
+.seccion_busqueda {
+  padding: 100px 0;
+  position: relative;
+  /*background-image: url('divider_blue_large.png');
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: bottom;*/
+}
+
+.text-white {
+  color: #FFFFFF;
+}
+
+.general-text {
+  font-size: 22px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.flex {
+  display: flex;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.texto_busqueda {
+  display: none;
+  text-align: right;
+  width: 40%;
+}
+
+
+.line-decoration {
+  bottom: 0;
+  display: block;
+  position: absolute;
+  top: 99%;
+  width: 100%;
+}
+
+
+@media screen and (min-width:992px) {
+  .texto_busqueda {
+    display: block;
+  }
+}

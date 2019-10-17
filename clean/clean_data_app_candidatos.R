@@ -30,7 +30,7 @@ aportes_cand <- aportes  %>%
                   group_by(campaign,  cargo = Corporación.o.Cargo, Organizacion.Politica, Elegido, Nombre.Candidato, Identificacion.Candidato, APORTANTE.NORMALIZADO, Identificación.Normalizada,  Ciudad.Ingreso, Tipo.de.Identificación, group = Tipo.Persona, Tipo.Donacion, Parentesco) %>% 
                    summarise(value = sum(as_number(Valor)))
 
-
+write_csv(aportes_cand, 'data/clean/aportes.csv')
 candidatos <- aportes_cand %>% 
                group_by(id = Identificacion.Candidato, name = Nombre.Candidato,
                         party = Organizacion.Politica, elegido = Elegido, campaign, cargo) %>% 
@@ -45,7 +45,7 @@ candidatos <- aportes_cand[c("Identificacion.Candidato", "Nombre.Candidato",
 candidatos <- candidatos %>% 
                 select(id = Identificacion.Candidato, name = Nombre.Candidato,
                        party = Organizacion.Politica, elegido = Elegido, campaign, cargo) %>% 
-  distinct() %>% mutate(group = "Persona Natural", value = 10)
+  distinct() %>% mutate(group = "Persona Natural", value = 1000000000000000000)
 
 
 aportantes <- aportes_cand[c("Identificación.Normalizada", "APORTANTE.NORMALIZADO", "group",
@@ -57,12 +57,20 @@ aportantes <- aportantes %>%
                       campaign, Ciudad.Ingreso, Tipo.de.Identificación, Tipo.Donacion, Parentesco, value) 
 
 nodes <- bind_rows(list(candidato = candidatos, aportante = aportantes), .id = "node_type")
+nodes$font.color <- '#000000'
+nodes$font.size <- '21.25px'
+nodes$shape <- 'circle'
+nodes$borderWidth <- 1
+
 
 write_csv(nodes, "data/clean/nodes.csv")
 
 edges <- aportes_cand[c("Identificacion.Candidato", "Identificación.Normalizada", "campaign")] 
 edges <- edges %>%
-          select(from = Identificacion.Candidato, to = Identificación.Normalizada, campaign = campaign)
+          select(from = Identificacion.Candidato, 
+                 to = Identificación.Normalizada,
+                 campaign = campaign)
+edges$color <- '#cccccc'
 write_csv(edges, "data/clean/edges.csv")
 
 

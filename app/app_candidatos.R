@@ -10,31 +10,72 @@ aportes <- read_csv('data/aportes.csv')
 nodes <- read_csv('data/nodes.csv', col_types = cols(.default = "c"))
 nodes$value <- as.numeric(nodes$value)
 edges <- read_csv('data/edges.csv')
+contratos <- read_csv('data/contratos.csv')
 
 ui <- 
   fluidPage(
-  suppressDependencies("bootstrap"),
+    suppressDependencies("bootstrap"),
+    tags$head(
+      tags$meta(name="viewport", content="width=device-width, initial-scale=1.0"),
+      tags$link(rel="stylesheet", type="text/css", href="styles.css"),
+      includeScript("js/iframeSizer.contentWindow.min.js"),
+      includeScript("js/elecciones.js")
+    ),
+  div(class = 'bg-blue seccion_busqueda',
+      tags$img(class = 'line-decoration', src='divider_blue_large.png'),
+      div(class = 'content',
+        div(class = 'flex justify-between items-center',
+          h1(class = 'title text-aqua', 'búsqueda'),
   uiOutput('buscador_candidato'),
+  div(class = 'texto_busqueda',
+      h1(class = 'title text-aqua', 'en esta sección'),
+   p(class = 'general-text text-white',
+'podrás conocer de dónde provino la financiación de las
+campañas electorales de distintas figuras políticas en los
+útimos períodos de elección popular.'
+     )
+    )
+   )
+  )
+),
   uiOutput('candidato_general'),
   visNetworkOutput('vizRed'),
   uiOutput('ficha_financiador'),
-  verbatimTextOutput('test')
+  uiOutput('ficha_contrata'),
+  uiOutput('otros_candidatos')
   )
 
 server <-
   function(input, output, session) {
     
     # buscador
+   
     output$buscador_candidato <- renderUI({
-      searchInput('id_candidato', label = 'BÚSQUEDA', value = "", placeholder = 'Nombre o cédula del candidato',
+      
+      div(class = '',
+      searchInput('id_candidato', label = ' ', value = "", placeholder = 'Nombre o cédula del candidato',
                   btnSearch = icon("search"), btnReset = icon("remove"), resetValue = "")
+         )
+      #selectizeInput('id_candidato', 'BÚSQUEDA',  choices = NULL, selected = NULL, options = list(placeholder = 'Nombre o cédula del candidato'))
+     #textInput('id_candidato',  label = 'BÚSQUEDA', value = "", placeholder = 'Nombre o cédula del candidato')
+      #  opts = c(unique(candidatos$name), unique(candidatos$id))
+      # autocomplete_input('id_candidato', 'id_candidato', opts, max_options = 10000, placeholder = 'Nombre o cédula del candidato')
     })
+    
+    
+    # observe({
+    #   if (is.null(input$id_candidato)) return()
+    #   id_c <-  isolate(tolower(iconv(input$id_candidato, "UTF-8", "ASCII//TRANSLIT")))
+    #   cand_filt <- candidatos$name[grep(id_c, unique(candidatos$name_id))]
+    #   updateSelectizeInput(session, 'id_candidato', choices = cand_filt)
+    # })
     
     # Input buscador
     candidato_buscado <- reactive({
-      if (is.null(input$id_candidato)) return()
-      persona <- tolower(iconv(input$id_candidato, "UTF-8", "ASCII//TRANSLIT"))
-      if (persona == "") return()
+      # if (is.null(input$id_candidato)) return()
+      # persona <- tolower(iconv(input$id_candidato, "UTF-8", "ASCII//TRANSLIT"))
+      # if (persona == "") return()
+      persona <- 'alvaro uribe velez'
       candidatos %>% filter(name_id == persona | id == persona)
     })
     
@@ -127,11 +168,75 @@ server <-
        )
      })
      
-     output$test <- renderPrint({
-      aporte_candidato() 
+     
+     
+     # Red financiadores
+     output$red_financiadores <- renderPrint({
+       aportante_filter()
      })
      
-    # 
+     
+     observeEvent(input$last_case, {
+       showModal(modalDialog(
+         title = "ACÁ VA LA RED",
+         verbatimTextOutput('red_financiadores'),
+         easyClose = TRUE,
+         footer = NULL
+       ))
+     })
+     
+     
+     # Ficha contratos
+     contratos_info <- reactive({
+      id_aportante <-  input$clickNode
+      if (is.null(id_aportante)) return(HTML('acá va un texto'))
+      dc <- contratos %>% filter(contratista_id == id_aportante | rep_legal_id == id_aportante)
+      if (nrow(dc) == 0) return()
+      dc
+     })
+     
+     output$ficha_contrata <- renderUI({
+       if (is.null(contratos_info()) | sum(class(contratos_info()) == 'html') == 1) return('aca va otro texto')
+      options(scipen = 9999)
+      resumen <- contratos_info() %>%
+                  dplyr::summarise(Valor = sum(as.numeric(cont_valor_tot), na.rm = T), Total = n())
+      div(
+        format(resumen$Valor, big.mark = ',', small.mark = '.'),
+        resumen$Total
+      )
+     })
+     
+     # imprimir contratos_info en dos tablas
+     #output$data_secop1
+     #output$data_secop2
+     
+     # otros candidatos financiados
+     output$otros_candidatos <- renderUI({
+       dt <- candidato_buscado()
+       if (is.null(dt) | is.null(aportante_filter())) return()
+       id_candidato <- unique(dt$id)
+       info <- aportante_filter() %>% filter(Identificacion.Candidato != id_candidato)
+       
+       if (nrow(info) == 0) {
+        res <- HTML('No ha financiado otros candidatos')
+       } else {
+        res <- map(1:nrow(info), function(i) {
+            tags$button(
+            id = info$Nombre.Candidato[i],
+            class = 'otros_candidatos',
+            info$Nombre.Candidato[i]
+          )
+        })
+       }
+       
+       res
+     })
+     
+     observeEvent(input$last_cand, {
+       updateSearchInput(session, 'id_candidato', value = input$last_cand)
+       #update_autocomplete_input(session, 'id_candidato', value = input$last_cand)
+       #updateTextInput(session, 'id_candidato', value = input$last_cand)
+     })
     
 
   }
