@@ -8,7 +8,7 @@ library(visNetwork)
 candidatos <- read_csv('data/candidatos.csv')
 aportes <- read_csv('data/aportes.csv')
 nodes <- read_csv('data/nodes.csv', col_types = cols(.default = "c"))
-nodes$value <- as.numeric(nodes$value)
+nodes$Valor <- as.numeric(nodes$Valor)
 edges <- read_csv('data/edges.csv')
 contratos <- read_csv('data/contratos.csv')
 
@@ -57,7 +57,7 @@ ui <-
                 div(class = 'red',
                       h4('red de financiadores'),
                     div(class = 'panel',
-                    visNetworkOutput('vizRed'))),
+                    visNetworkOutput('vizRed', width = '100%', height = 550))),
                 div(class = 'contributor' ,
                     h4('datos del financiador'),
                     div(class = 'panel',
@@ -107,10 +107,9 @@ server <-
     
     # Input buscador
     candidato_buscado <- reactive({
-      # if (is.null(input$id_candidato)) return()
-      # persona <- tolower(iconv(input$id_candidato, "UTF-8", "ASCII//TRANSLIT"))
-      # if (persona == "") return()
-      persona <- 'alvaro uribe velez'
+      if (is.null(input$id_candidato)) return()
+      persona <- tolower(iconv(input$id_candidato, "UTF-8", "ASCII//TRANSLIT"))
+      if (persona == "") persona <- 'alvaro uribe velez'
       candidatos %>% filter(name_id == persona | id == persona)
     })
     
@@ -152,12 +151,18 @@ server <-
       edges_filter <- edges %>% 
         filter(from == candidato, campaign %in% campana) %>% 
         distinct(to, .keep_all = T)
+      
       nodes_filter <- nodes %>% 
         filter(id %in%  c(unique(edges_filter$from), unique(edges_filter$to))) %>% 
-        group_by(id) %>%
-        dplyr::summarise(label = paste(unique(name), collapse = '-'),
+        group_by(id, node_type) %>%
+        dplyr::summarise(label = paste(unique(label), collapse = '-'),
                          group = paste(unique(group), collapse = '-'),
-                         value = sum(value))
+                         Valor = sum(Valor))
+    
+      nodes_filter$borderWidth <- 1
+      nodes_filter$font.size <- 30
+      nodes_filter$size <- scales::rescale(nodes_filter$Valor, to = c(25, 75))
+      nodes_filter$size <- ifelse(nodes_filter$node_type == 'candidato', 85, nodes_filter$size)
       list(edges = edges_filter, nodes = nodes_filter)
     })
     
@@ -166,7 +171,15 @@ server <-
     
     output$vizRed <- renderVisNetwork({
       if (is.null(candidato_filter())) return()
-      visNetwork(candidato_filter()$nodes,  candidato_filter()$edges) %>% 
+      visNetwork(candidato_filter()$nodes,  candidato_filter()$edges,  style = "font-family:Comic Sans MS;color:#ff0000;font-size:15px;text-align:center;") %>% 
+        visGroups(groupname = "Persona Natural", color = "#C250C2") %>%
+        visGroups(groupname = "Persona Jurídica", color = "#137FC0") %>% 
+        visGroups(groupname = "Candidato", color = "#0A446B") %>% 
+        visPhysics(barnesHut = list(
+          gravitationalConstant = -10000,
+          springConstant = 0.002,
+          springLength = 100
+        )) %>% 
         visEvents( click = "function(nodes) {
         Shiny.onInputChange('clickNode', {nodes : nodes.nodes[0]});
         ;}"
@@ -194,18 +207,32 @@ server <-
     
     # Ficha 
     output$ficha_financiador <- renderUI({
-      if (is.null(aportante_filter())) return(HTML('bla bla bla'))
+      if (is.null(aportante_filter())) {
+        HTML(
+          '<div class = "info-ficha"><img src="click.svg" style="width: 50px; display:block;margin-left: 40%;"/>
+      <br/>
+      <p class = "info-ficha">Haz click en algún financiador para ver su información detallada</p>
+      </div>')
+      } else {
       options(scipen = 9990)
       dt <- aporte_candidato()
+      print(dt)
       total_aporte <- format(sum(dt$value), big.mark = ',', small.mark = '.')
-      div(class = 'ficha_aportante',
-          dt$APORTANTE.NORMALIZADO,
-          dt$Tipo.de.Identificación,
-          dt$Identificación.Normalizada,
-          dt$Ciudad.Ingreso,
-          total_aporte,
-          tags$button(id = dt$Identificación.Normalizada, class = "click_ficha",  "Ver más")
-      )
+      tx <- div(class = 'ficha_aportante',
+                HTML(paste0('<div><div>Razón social <br/>',      
+                dt$APORTANTE.NORMALIZADO,'</div>',
+                '<div>Parentesco <br/>',
+                dt$Parentesco, '</div>',
+                '<div>Monto de financiación <br/> $',
+                total_aporte,'</div></div>
+                <div><div>',
+                dt$Tipo.de.Identificación, ' <br/>',
+                dt$Identificación.Normalizada,'</div>',
+                '<div>Ciudad <br/>',
+                dt$Ciudad.Ingreso,'</div>',
+                tags$button(id = dt$Identificación.Normalizada, class = "click_ficha",  "Ver más"), '</div>'
+      )))
+      }
     })
     
     
@@ -236,7 +263,7 @@ server <-
     })
     
     output$ficha_contrata <- renderUI({
-      if (is.null(contratos_info()) | sum(class(contratos_info()) == 'html') == 1) return('aca va otro texto')
+      if (is.null(contratos_info()) | sum(class(contratos_info()) == 'html') == 1) return()
       options(scipen = 9999)
       resumen <- contratos_info() %>%
         dplyr::summarise(Valor = sum(as.numeric(cont_valor_tot), na.rm = T), Total = n())
@@ -266,7 +293,7 @@ server <-
         res <- map(1:nrow(info), function(i) {
           tags$button(
             id = info$Nombre.Candidato[i],
-            class = 'otros_candidatos',
+            class = 'others-info',
             info$Nombre.Candidato[i]
           )
         })
