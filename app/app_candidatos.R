@@ -2,7 +2,7 @@ library(shiny)
 library(shinyWidgets)
 library(tidyverse)
 library(visNetwork)
-
+library(DT)
 
 # Data
 candidatos <- read_csv('data/candidatos.csv')
@@ -87,11 +87,12 @@ server <-
     
     output$buscador_candidato <- renderUI({
       
-      div(class = '',
-          searchInput('id_candidato', label = ' ', value = "", placeholder = 'Nombre o cédula del candidato',
-                      btnSearch = icon("search"), btnReset = icon("remove"), resetValue = "")
-      )
-      #selectizeInput('id_candidato', 'BÚSQUEDA',  choices = NULL, selected = NULL, options = list(placeholder = 'Nombre o cédula del candidato'))
+      temp_cand <- c('SERGIO FAJARDO VALDERRAMA', 'IVAN DUQUE MARQUEZ','AURELIJUS RUTENIS ANTANAS MOCKUS SIVICKAS', 'ARTURO CHAR CHALJUB', 'GABRIEL JAIME VALLEJO CHUJFI' ,'ALVARO URIBE VELEZ', 'CESAR AUGUSTO ORTIZ ZORRO', 'GUSTAVO FRANCISCO PETRO URREGO', 'ENRIQUE PEÑALOSA LONDOÑO')
+      # div(class = '',
+      #     searchInput('id_candidato', label = ' ', value = "", placeholder = 'Nombre o cédula del candidato',
+      #                 btnSearch = icon("search"), btnReset = icon("remove"), resetValue = "")
+      # )
+      selectizeInput('id_candidato', 'BÚSQUEDA',  choices = temp_cand )#, selected = NULL, options = list(placeholder = 'Selecciona un candidato'))
       #textInput('id_candidato',  label = 'BÚSQUEDA', value = "", placeholder = 'Nombre o cédula del candidato')
       #  opts = c(unique(candidatos$name), unique(candidatos$id))
       # autocomplete_input('id_candidato', 'id_candidato', opts, max_options = 10000, placeholder = 'Nombre o cédula del candidato')
@@ -109,7 +110,7 @@ server <-
     candidato_buscado <- reactive({
       if (is.null(input$id_candidato)) return()
       persona <- tolower(iconv(input$id_candidato, "UTF-8", "ASCII//TRANSLIT"))
-      if (persona == "") persona <- 'alvaro uribe velez'
+      #if (persona == "") persona <- 'alvaro uribe velez'
       candidatos %>% filter(name_id == persona | id == persona)
     })
     
@@ -151,13 +152,13 @@ server <-
       edges_filter <- edges %>% 
         filter(from == candidato, campaign %in% campana) %>% 
         distinct(to, .keep_all = T)
-      
+      if (nrow(edges_filter) == 0) return()
       nodes_filter <- nodes %>% 
         filter(id %in%  c(unique(edges_filter$from), unique(edges_filter$to))) %>% 
         group_by(id, node_type) %>%
         dplyr::summarise(label = paste(unique(label), collapse = '-'),
                          group = paste(unique(group), collapse = '-'),
-                         Valor = sum(Valor))
+                         Valor = sum(Valor)) %>% distinct(id, .keep_all = T)
     
       nodes_filter$borderWidth <- 1
       nodes_filter$font.size <- 30
@@ -171,24 +172,29 @@ server <-
     
     output$vizRed <- renderVisNetwork({
       if (is.null(candidato_filter())) return()
-      visNetwork(candidato_filter()$nodes,  candidato_filter()$edges,  style = "font-family:Comic Sans MS;color:#ff0000;font-size:15px;text-align:center;") %>% 
+      visNetwork(candidato_filter()$nodes,  candidato_filter()$edges) %>% 
         visGroups(groupname = "Persona Natural", color = "#C250C2") %>%
         visGroups(groupname = "Persona Jurídica", color = "#137FC0") %>% 
         visGroups(groupname = "Candidato", color = "#0A446B") %>% 
-        visPhysics(barnesHut = list(
+        visPhysics(
+          stabilization = FALSE,
+          barnesHut = list(
           gravitationalConstant = -10000,
           springConstant = 0.002,
           springLength = 100
         )) %>% 
-        visEvents( click = "function(nodes) {
+        visEvents(
+        click = "function(nodes) {
         Shiny.onInputChange('clickNode', {nodes : nodes.nodes[0]});
         ;}"
-        )
+        ) 
     })
+    
+
     
     # Información aportante
     aportante_filter <- reactive({
-      id_click <- input$clickNode
+      id_click <- input$clickNode$nodes
       if (is.null(id_click)) return()
       aportante <- aportes %>% filter(Identificación.Normalizada == id_click)
       if (nrow(aportante) == 0) return()
@@ -216,21 +222,21 @@ server <-
       } else {
       options(scipen = 9990)
       dt <- aporte_candidato()
-      print(dt)
       total_aporte <- format(sum(dt$value), big.mark = ',', small.mark = '.')
       tx <- div(class = 'ficha_aportante',
-                HTML(paste0('<div><div>Razón social <br/>',      
-                dt$APORTANTE.NORMALIZADO,'</div>',
-                '<div>Parentesco <br/>',
-                dt$Parentesco, '</div>',
-                '<div>Monto de financiación <br/> $',
-                total_aporte,'</div></div>
-                <div><div>',
-                dt$Tipo.de.Identificación, ' <br/>',
-                dt$Identificación.Normalizada,'</div>',
-                '<div>Ciudad <br/>',
-                dt$Ciudad.Ingreso,'</div>',
-                tags$button(id = dt$Identificación.Normalizada, class = "click_ficha",  "Ver más"), '</div>'
+                HTML(paste0('<div><div class = "inp-i"><span class = "ficha-titulos">Razón social</span> <br/><span class = "ficha-results">',      
+                dt$APORTANTE.NORMALIZADO,'</span></div>',
+                '<div class = "inp-i"><span class = "ficha-titulos">Parentesco</span> <br/><span class = "ficha-results">',
+                dt$Parentesco, '</span></div>',
+                '<div class = "inp-i"><span class = "ficha-titulos">Monto de financiación </span><br/> <span class = "ficha-results">$',
+                total_aporte,'</span></div></div>
+                <div><div class = "inp-i"><span class = "ficha-titulos">',
+                dt$Tipo.de.Identificación, ' </span><br/><span class = "ficha-results">',
+                dt$Identificación.Normalizada,'</span></div>',
+                '<div class = "inp-i"><span class = "ficha-titulos">Ciudad </span><br/><span class = "ficha-results">',
+                dt$Ciudad.Ingreso,'</span></div>',
+                #tags$button(id = dt$Identificación.Normalizada, class = "click_ficha",  "Ver más"),
+                '</div>'
       )))
       }
     })
@@ -255,7 +261,7 @@ server <-
     
     # Ficha contratos
     contratos_info <- reactive({
-      id_aportante <-  input$clickNode
+      id_aportante <-  input$clickNode$nodes
       if (is.null(id_aportante)) return(HTML('acá va un texto'))
       dc <- contratos %>% filter(contratista_id == id_aportante | rep_legal_id == id_aportante)
       if (nrow(dc) == 0) return()
@@ -267,17 +273,27 @@ server <-
       options(scipen = 9999)
       resumen <- contratos_info() %>%
         dplyr::summarise(Valor = sum(as.numeric(cont_valor_tot), na.rm = T), Total = n())
-      div(
-        format(resumen$Valor, big.mark = ',', small.mark = '.'),
-        resumen$Total
-      )
+      div(class = 'contratos-info',
+        HTML(paste0(
+          '<div><div><span class = "ficha-titulos">Valor total de contratos</span> <br/><span class = "ficha-results">$',
+        format(resumen$Valor, big.mark = ',', small.mark = '.'), '</span></div></div>',
+        '<div><div><span class = "ficha-titulos">Número de contratos</span> <br/> <span class = "ficha-results">',
+        resumen$Total, '</span></div></div>'
+      )))
     })
     
     # imprimir contratos_info en dos tablas
+    # output$data_secop1 <- renderDataTable({
+    #   print(contratos_info())
     output$data_secop1 <- renderPrint({
-      if (is.null(contratos_info()) | sum(class(contratos_info()) == 'html') == 1) return('aca va la tabla')
-      contratos_info()  
-    })
+       if (is.null(input$clickNode$nodes)) return()
+  
+       dt <- contratos_info()
+       dt
+      # pl <- nrow(dt)
+      # if (pl > 4) pl <- 4
+      # DT::datatable(dt, options = list( pageLength = pl, dom = "t", ordering = FALSE))
+       })
     #output$data_secop2
     
     # otros candidatos financiados
@@ -303,7 +319,9 @@ server <-
     })
     
     observeEvent(input$last_cand, {
-      updateSearchInput(session, 'id_candidato', value = input$last_cand)
+      opts <-  c(input$last_cand, c('SERGIO FAJARDO VALDERRAMA', 'IVAN DUQUE MARQUEZ','AURELIJUS RUTENIS ANTANAS MOCKUS SIVICKAS', 'ARTURO CHAR CHALJUB', 'GABRIEL JAIME VALLEJO CHUJFI' ,'ALVARO URIBE VELEZ', 'CESAR AUGUSTO ORTIZ ZORRO', 'GUSTAVO FRANCISCO PETRO URREGO', 'ENRIQUE PEÑALOSA LONDOÑO'))
+      updateSelectizeInput(session, 'id_candidato',choices = opts ,selected = input$last_cand)
+      #updateSearchInput(session, 'id_candidato', value = input$last_cand)
       #update_autocomplete_input(session, 'id_candidato', value = input$last_cand)
       #updateTextInput(session, 'id_candidato', value = input$last_cand)
     })

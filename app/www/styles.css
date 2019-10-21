@@ -229,11 +229,31 @@ h4 {
   cursor: pointer;
 }
 
+.inp-i {
+  margin-bottom: 13px;
+}
+
 .ficha_aportante {
  display: grid;
  grid-template-columns: 0.6fr 0.4fr;
  grid-gap: 15px;
 }
+
+.ficha-titulos {
+  color: #0A446B;
+  font-size: 15px;
+}
+.ficha-results {
+  color: #0A446B;
+  font-size: 17px;
+  font-weight: 800;
+}
+.contratos-info {
+  display: grid;
+  grid-template-columns: 0.5fr 0.5fr;
+  grid-gap: 10px;
+}
+
 
 ::-webkit-scrollbar
 {
