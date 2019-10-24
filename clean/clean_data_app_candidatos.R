@@ -3,8 +3,8 @@ library(tidyverse)
 
 contratos <- read_csv("data_clean/contratos_aportantes.csv", col_types = cols(.default = "c"))
 cont_vars <- c("cont_firma_ano", "contratista_id", "contratista_nombre", "rep_legal_id",
-               "rep_legal_nombre","ent_nombre", "ent_nit", "cont_valor_tot", "proc_tipo",
-               "proc_status","cont_objeto","cont_objeto_det")
+               "rep_legal_nombre","ent_nombre", "ent_nit", "cont_valor_tot", "moneda", "proc_tipo",
+               "proc_status", "cont_tipo", "cont_objeto","cont_objeto_det", "ruta_secop1", "secop")
 
 contratos2 <- contratos %>% 
                select(one_of(cont_vars))
@@ -32,7 +32,7 @@ write_csv(aportes_cand, 'data/clean/aportes.csv')
 candidatos <- aportes_cand %>% 
                group_by(id = Identificacion.Candidato, name = Nombre.Candidato,
                         party = Organizacion.Politica, elegido = Elegido, campaign, cargo) %>% 
-                summarise(total = n())
+                summarise(total = n(), valor = sum(Valor, na.rm = T))
 candidatos$name_id <- tolower(iconv(candidatos$name, "UTF-8", "ASCII//TRANSLIT"))
 write_csv(candidatos, "data/clean/candidatos.csv")
 

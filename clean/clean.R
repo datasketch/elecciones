@@ -6,7 +6,7 @@ library(openxlsx)
 secop_ii <- read_csv('data/secop/original/SECOP_II_Contratos.csv', col_types = cols(.default = "c"))
 
 secop_ii <- secop_ii %>%
-                   drop_na(`Nit Entidad`)
+               drop_na(`Nit Entidad`)
 
 secop_ii <- secop_ii %>% filter(`Valor del Contrato` > 100)
 dic_secop_ii <- read_csv('data/secop/original/names_secop.csv')

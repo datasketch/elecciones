@@ -26,7 +26,7 @@ body {
 
 .title {
   font-weight: 800;
-  font-size: 25px;
+  font-size: 23px;
   letter-spacing: 0.05em;
   margin: 0;
   text-transform: uppercase;
@@ -54,7 +54,7 @@ body {
 }
 
 .general-text {
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 400;
   margin: 0;
 }
@@ -73,6 +73,10 @@ body {
 
 .items-center {
   align-items: center;
+}
+
+.input-autosuggest {
+    width: 500px;
 }
 
 .texto_busqueda {
@@ -98,7 +102,7 @@ body {
   color: #0A446B !important;
   border: 1px solid;/*none !important;*/
   font-weight: 800 !important;
-  font-size: 25px !important;
+  font-size: 21px !important;
   letter-spacing: 0.05em !important;
   line-height: 1 !important;
   margin: 0 !important;
@@ -116,7 +120,7 @@ body {
 }
 
 .titles-filters {
- font-size: 22px;
+ font-size: 21px;
  font-weight: 400;
  margin: 0 0 12px;
  text-transform: uppercase
@@ -153,18 +157,23 @@ body {
 .results {
   display: grid;
   grid-template-columns: 0.6fr minmax(0,0.4fr);;
-  grid-template-rows: repeat(4, 1fr);
-  grid-template-areas: "red datos" 
+  /*grid-template-rows: repeat(4, 1fr);*/
+  grid-template-areas: "red info"
+                       "red datos" 
                        "red secop"
                        "red otros"
                        "tabla tabla";
  grid-gap: 25px;
 }
 
+
 .red {
   grid-area: red;
 }
 
+.candidato {
+ grid-area: info;  
+}
 
 .contributor {
   grid-area: datos;
@@ -193,6 +202,26 @@ body {
   min-width: 0;
   min-height: 0;
   overflow-x: auto;
+}
+
+#candidato_info,#otros_candidatos {
+  height: 110px !important;
+} 
+
+#ficha_contrata {
+  height: 85px !important;
+} 
+
+#ficha_financiador {
+  height: 130px;
+}
+
+.max-sev {
+  width: 70%;
+}
+
+.candidato-general,.candidato-elegido,.financiador-general,.financiador-elegido{
+  display: flex;
 }
 
 h4 {
@@ -233,21 +262,20 @@ h4 {
   margin-bottom: 13px;
 }
 
-.ficha_aportante {
- display: grid;
- grid-template-columns: 0.6fr 0.4fr;
- grid-gap: 15px;
-}
+
 
 .ficha-titulos {
   color: #0A446B;
   font-size: 15px;
+  font-weight: 400;
 }
+
 .ficha-results {
   color: #0A446B;
   font-size: 17px;
   font-weight: 800;
 }
+
 .contratos-info {
   display: grid;
   grid-template-columns: 0.5fr 0.5fr;
@@ -255,18 +283,49 @@ h4 {
 }
 
 
-::-webkit-scrollbar
-{
-  width: 3px;
+.click_ficha {
+  border: none;
+  background: #137FC0;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 10px;
 }
 
-::-webkit-scrollbar-track
-{
+
+
+thead {
+  color: #0A446B;
+  font-size: 15px;
+   font-weight: 400;
+}
+
+tbody {
+  color: #0A446B;
+  font-size: 17px;
+}
+
+td,th {
+  text-align: left !important;
+}
+
+table {
+  width: 100%;
+  margin-right: auto;
+  margin-left: 0px;
+}
+
+
+::-webkit-scrollbar{
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track{
   background: #e2eaed;
 }
 
-::-webkit-scrollbar-thumb
-{
+::-webkit-scrollbar-thumb{
   background: #0a446b;
 }
 
@@ -277,10 +336,11 @@ h4 {
 }
 
 
+
 @media screen and (min-width:768px) {
   
 .title {
-  font-size: 35px;
+  font-size: 31px;
 }
 
 .filter-output {
