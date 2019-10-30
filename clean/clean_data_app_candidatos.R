@@ -14,7 +14,6 @@ write_csv(contratos2, "data/clean/contratos.csv")
 source('~/Repos/elecciones/clean/tools.R')
 aportes <- read_csv("data_clean/candidatos_aportantes.csv", col_types = cols(.default = "c"))
 
-
 aportes <- aportes %>%
              mutate(campaign = ifelse(Corporación.o.Cargo %in% c("Cámara de Representantes", "Senado de la República"), "Congreso 2018",
                                 ifelse(Corporación.o.Cargo == "Presidencia de la República", "Presidente 2018", "Regionales 2015"))
@@ -24,17 +23,24 @@ aportes$Nombre.Candidato <- gsub("\\s+", " ", aportes$Nombre.Candidato)
 aportes$APORTANTE.NORMALIZADO <- gsub("\\s+", " ", aportes$APORTANTE.NORMALIZADO)
 
 aportes_cand <- aportes  %>% 
-                 group_by(campaign,  cargo = Corporación.o.Cargo, Organizacion.Politica, Elegido, Nombre.Candidato, Identificacion.Candidato, APORTANTE.NORMALIZADO, Identificación.Normalizada,  Ciudad.Ingreso, Tipo.de.Identificación, group = Tipo.Persona, Tipo.Donacion, Parentesco) %>% 
-                  summarise(Valor = sum(as_number(Valor)))
+                 group_by(campaign,  cargo = Corporación.o.Cargo, Organizacion.Politica, Elegido, Nombre.Candidato, Identificacion.Candidato, APORTANTE.NORMALIZADO, Identificación.Normalizada, Tipo.de.Identificación) %>% 
+                  summarise(Valor = sum(as_number(Valor)),
+                            Ciudad.Ingreso = paste(unique(Ciudad.Ingreso), collapse = ' y '),
+                            group = paste(unique(Tipo.Persona)[1], collapse = ' - '))
 
-write_csv(aportes_cand, 'data/clean/aportes.csv')
+aportes_cand$name_cand_line <- add_break(aportes_cand$Nombre.Candidato)
+aportes_cand$name_aport_line <- add_break(aportes_cand$APORTANTE.NORMALIZADO)
+
+write_csv(aportes_cand, 'data/clean/aportes.csv', na = '')
 
 candidatos <- aportes_cand %>% 
                group_by(id = Identificacion.Candidato, name = Nombre.Candidato,
                         party = Organizacion.Politica, elegido = Elegido, campaign, cargo) %>% 
-                summarise(total = n(), valor = sum(Valor, na.rm = T))
+                summarise(total = n(), 
+                          Valor = sum(Valor, na.rm = T))
 candidatos$name_id <- tolower(iconv(candidatos$name, "UTF-8", "ASCII//TRANSLIT"))
-write_csv(candidatos, "data/clean/candidatos.csv")
+
+write_csv(candidatos, "data/clean/candidatos.csv", na = '')
 
 
 candidatos <- aportes_cand[c("Identificacion.Candidato", "Nombre.Candidato",
@@ -43,22 +49,21 @@ candidatos <- aportes_cand[c("Identificacion.Candidato", "Nombre.Candidato",
 candidatos <- candidatos %>% 
                 select(id = Identificacion.Candidato, name = Nombre.Candidato,
                        party = Organizacion.Politica, elegido = Elegido, campaign, cargo) %>% 
-                  distinct() %>% 
-                    mutate(group = "Persona Natural")
+                  distinct( .keep_all = T) %>% 
+                    mutate(group = "Candidato")
 
 
 aportantes <- aportes_cand[c("Identificación.Normalizada", "APORTANTE.NORMALIZADO", "group",
-                             "campaign", "Ciudad.Ingreso", "Tipo.de.Identificación", "Tipo.Donacion",
-                             "Parentesco", "Valor")]
+                             "campaign", "Ciudad.Ingreso", "Tipo.de.Identificación",  "Valor")]
 
 aportantes <- aportantes %>% 
                 select(id = Identificación.Normalizada, name = APORTANTE.NORMALIZADO, group,
-                       campaign, Ciudad.Ingreso, Tipo.de.Identificación, Tipo.Donacion, Parentesco, Valor) 
+                       campaign, Ciudad.Ingreso, Tipo.de.Identificación, Valor) 
 
 nodes <- bind_rows(list(candidato = candidatos, aportante = aportantes), .id = "node_type")
 nodes$Valor <- ifelse(nodes$node_type == 'candidato', 10, nodes$Valor)
-nodes$group <- ifelse(nodes$node_type == 'candidato', 'Candidato', nodes$group)
-nodes$label <- as.character(add_break(nodes$name))
+#nodes$group <- ifelse(nodes$node_type == 'candidato', 'Candidato', nodes$group)
+nodes$label <- as.character(add_break(nodes$name)) 
 
 write_csv(nodes, "data/clean/nodes.csv")
 

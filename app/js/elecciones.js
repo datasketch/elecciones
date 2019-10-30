@@ -1,23 +1,27 @@
-$(document).on('click', '.click_ficha', function () {
-  Shiny.setInputValue("last_case", this.id, {priority: "event"});
-});
-
 $(document).on('click', '.others-info', function () {
   Shiny.setInputValue("last_cand", this.id, {priority: "event"});
 });
 
 
-//var netWorkEvent = new CustomEvent("gato", {
-//  detail: {
-//    aaaaver: true
-//  }
-//});
+Shiny.addCustomMessageHandler("testmessage",
+  function(message) {
+    var modal = document.querySelector('.modal');
+    modal.classList.add('is-visible')
+    modal.addEventListener('click', function (event) {
+      if (event.target.matches('.modal')) {
+        modal.classList.remove('is-visible')
+      }
+    })
+  }
+);
 
-//var modalTrigger = document.querySelector('.click_ficha');
-//Lconsole.log(modalTrigger);
-
-//var modal = document.getElementById(modalTrigger.dataset.modal);
-
-//modalTrigger.addEventListener('click', function (event) {
-//  modal.classList.add('is-visible');
-//});
+Shiny.addCustomMessageHandler("otros_candidatos",
+  function(id) {
+    var el = document.querySelector('.input-autosuggest');
+    var input = el.querySelector('input');
+    input.value = id;
+    el.dispatchEvent(new KeyboardEvent('keyup', {
+      keyCode: 13
+    }));
+  }
+);

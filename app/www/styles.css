@@ -43,8 +43,8 @@ body {
 .seccion_busqueda {
   padding: 100px 0;
   position: relative;
-  /*background-image: url('divider_blue_large.png');
-  background-repeat: no-repeat;
+  /*background-image: url('divider_large.png');
+   background-repeat: no-repeat;
   background-size: contain;
   background-position: bottom;*/
 }
@@ -100,7 +100,7 @@ body {
 
 .selectize-input {
   color: #0A446B !important;
-  border: 1px solid;/*none !important;*/
+  border: none !important;
   font-weight: 800 !important;
   font-size: 21px !important;
   letter-spacing: 0.05em !important;
@@ -156,7 +156,7 @@ body {
 
 .results {
   display: grid;
-  grid-template-columns: 0.6fr minmax(0,0.4fr);;
+  grid-template-columns: 0.6fr minmax(0,0.4fr);
   /*grid-template-rows: repeat(4, 1fr);*/
   grid-template-areas: "red info"
                        "red datos" 
@@ -202,6 +202,36 @@ body {
   min-width: 0;
   min-height: 0;
   overflow-x: auto;
+}
+
+.border-legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #4D4D4D;
+  font-size: 17px;
+}
+.content-legend {
+ display: flex;
+ align-items: center;
+ margin-bottom: 3px;
+ margin-right: 10px;
+} 
+
+#circle-juridica {
+ width: 15px;
+ height: 15px;
+ background: #137FC0;
+ border-radius: 50%;
+ margin-right: 3px;
+}
+
+#circle-natural {
+ width: 15px;
+ height: 15px;
+ background: #C250C2;
+ border-radius: 50%;
+ margin-right: 3px;
 }
 
 #candidato_info,#otros_candidatos {
@@ -362,3 +392,92 @@ table {
 
 
 
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  opacity: 0;
+  transition: opacity .5s ease-in;
+  transition-delay: 0.25s;
+  z-index: -1;
+}
+
+.modal-wrapper {
+  width: 80%;
+  background-color: #ffffff;
+  box-shadow: 5px 5px 5px 0 rgba(0,0,0,0.2);
+  border-radius: 3px;
+  overflow: hidden;
+  opacity: 0;
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: all .5s ease-in;
+  transition-delay: 0.25s;
+  /* Para diseño */
+  max-height: 700px;
+}
+
+.modal-content {
+  opacity: 0;
+  transition: opacity .25s ease-in;
+  transition-delay: 0s;
+  padding: 20px 20px;
+  background: #F8F8F8;
+  max-height: 700px;
+}
+
+.modal.is-visible {
+  opacity: 1;
+  transition-delay: 0s;
+  z-index: 1;
+}
+
+.modal.is-visible .modal-wrapper {
+  top: 50%;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.modal.is-visible .modal-content {
+  opacity: 1;
+  transition-delay: 0.5s;
+}
+
+.nombre-fin {
+   padding: 30px;
+   background: #fff;
+   border-radius: 3px;
+   box-shadow: 3px 3px 10px 0 rgba(0,0,0, 0.1);
+   margin-bottom: 20px;
+}
+
+.results-fin {
+  display: grid;
+  grid-template-columns: 0.4fr minmax(0,0.6fr);
+  grid-template-areas: "redAp tabAp";
+  grid-gap: 25px;
+}
+
+
+.red-aportantes {
+   grid-area: redAp;
+}
+
+.tabla-aportantes {
+   grid-area: tabAp;
+   overflow: auto;
+}
+
+.panel-fin {
+   padding: 30px;
+   background: #fff;
+   border-radius: 3px;
+   box-shadow: 3px 3px 10px 0 rgba(0,0,0, 0.1);
+   max-height: 500px;
+}

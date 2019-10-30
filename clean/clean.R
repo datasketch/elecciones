@@ -4,7 +4,7 @@ library(openxlsx)
 # cambio de nombres secop 2
 
 secop_ii <- read_csv('data/secop/original/SECOP_II_Contratos.csv', col_types = cols(.default = "c"))
-
+secop_ii <- secop_ii %>% filter(`Estado Contrato` != "Cancelado")
 secop_ii <- secop_ii %>%
                drop_na(`Nit Entidad`)
 
@@ -24,6 +24,7 @@ secop_ii <- secop_ii %>%
 
 secop_i <- read_csv('data/secop/original/secop_aportantes.csv', col_types = cols(.default = "c"))
 secop_i$secop <- 'Uno'
+
 secop_i <- secop_i %>% drop_na(cont_firma_ano)
 secop_i <- secop_i %>% filter(cont_valor_tot > 10)
 
@@ -54,6 +55,7 @@ secop_temp <- bind_rows(sec_cont, sec_rep) %>%
 
 
 candidatos <- read.xlsx('data/candidatos/BASE-GENERAL-CUENTAS-CLARAS.xlsx')
+candidatos$Tipo.Persona <- ifelse(is.na(candidatos$Tipo.Persona), 'Persona Jurídica', candidatos$Tipo.Persona)
 candidatos$Identificación.Normalizada <- as.character(candidatos$Identificación.Normalizada)
 candidatos <- candidatos %>% 
                 filter(!APORTANTE.NORMALIZADO %in% c('IDENTIFICACIÓN INVÁLIDA', 'ANULADO',  'APORTANTE INEXISTENTE'),
@@ -74,11 +76,13 @@ secop_fil <- secop_all %>% filter(rep_legal_id %in% unique(id_contrata$contratis
 length(unique(id_contrata$contratista_id))
 
 
-write_csv(secop_fil,  'data_clean/contratos_aportantes.csv')
+write_csv(secop_fil,  'data_clean/contratos_aportantes.csv', na = '')
 
 candidatos_fil <- candidatos %>% filter(Identificación.Normalizada %in% unique(secop_temp$contratista_id))
 length(unique(candidatos_fil$Identificación.Normalizada))
-write_csv(candidatos_fil,  'data_clean/candidatos_aportantes.csv')
+# blabla <- candidatos %>% filter(Identificación.Normalizada %in% unique(secop_all$contratista_id) | Identificación.Normalizada %in% unique(secop_all$rep_legal_id))
+# length(unique(blabla$Identificación.Normalizada))
+write_csv(candidatos_fil,  'data_clean/candidatos_aportantes.csv', na = '')
 
 rm(list = ls())
 
@@ -94,7 +98,7 @@ write_csv(func_sec, 'data_clean/funcionamiento_filter.csv')
 secop_func <- secop_all %>% filter(rep_legal_id %in% unique(func$IDENTIFICACION_NORM) | contratista_id %in% unique(func$IDENTIFICACION_NORM))
 length(unique(secop_func$contratista_id))
 
-write_csv(secop_func, 'data_clean/secop_filter_funcionamiento.csv')
+write_csv(secop_func, 'data_clean/secop_filter_funcionamiento.csv', na = '')
 
 length(unique(func_sec$IDENTIFICACION_NORM))
 
