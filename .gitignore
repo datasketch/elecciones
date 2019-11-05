@@ -7,3 +7,9 @@ data_*
 clean/data_*
 clean/data/*
 clean/data_clean/*
+app-candidatos/data_*
+app-candidatos/data/*
+app-cruces/data_*
+app-cruces/data/*
+app-funcionamiento/data_*
+app-funcionamiento/data/*

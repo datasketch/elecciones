@@ -1,0 +1,12 @@
+name: app-cruces
+title: app-cruces
+username:
+account: randommonkey
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1424742
+bundleId: 2566115
+url: https://randommonkey.shinyapps.io/app-cruces/
+when: 1572973414.57935
+asMultiple: FALSE
+asStatic: FALSE

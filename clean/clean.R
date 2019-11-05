@@ -26,7 +26,6 @@ secop_i <- read_csv('data/secop/original/secop_aportantes.csv', col_types = cols
 secop_i$secop <- 'Uno'
 
 secop_i <- secop_i %>% drop_na(cont_firma_ano)
-secop_i <- secop_i %>% filter(cont_valor_tot > 10)
 
 secop_i <- secop_i %>% 
             filter(cont_firma_ano %in% c("2015", "2016", "2017", "2018", "2019")) 
@@ -35,10 +34,14 @@ unique(secop_i$cont_firma_ano)
 
 # union secop
 secop_all <- bind_rows(secop_i, secop_ii)
-unique(secop_all$cont_firma_ano)
-
-
-
+secop_all$moneda[is.na(secop_all$moneda)] <- "No Definida" 
+#secop_all <- secop_all %>% filter(cont_valor_tot > 50)
+# secop_all$ind_cuantia <-  ifelse(secop_all$cont_valor_tot <= 100 & secop_all$moneda != "Dólares (USD)", 'remover', 'dejar' )
+# secop_all <- secop_all %>% 
+#               filter(ind_cuantia == 'dejar') %>% 
+#                select(-ind_cuantia)
+min(secop_all$cont_cuantia)
+min(secop_all$cont_valor_tot)
 # solo contratos de aportantes a candidatos
 
 sec_cont <- secop_all %>%
@@ -55,8 +58,11 @@ secop_temp <- bind_rows(sec_cont, sec_rep) %>%
 
 
 candidatos <- read.xlsx('data/candidatos/BASE-GENERAL-CUENTAS-CLARAS.xlsx')
+candidatos$Elegido[candidatos$Identificacion.Candidato == 79940745] <- 'Sí'
 candidatos$Tipo.Persona <- ifelse(is.na(candidatos$Tipo.Persona), 'Persona Jurídica', candidatos$Tipo.Persona)
 candidatos$Identificación.Normalizada <- as.character(candidatos$Identificación.Normalizada)
+candidatos$Nombre.Candidato <- gsub("\\s+", " ", candidatos$Nombre.Candidato)
+candidatos$APORTANTE.NORMALIZADO <- gsub("\\s+", " ", candidatos$APORTANTE.NORMALIZADO)
 candidatos <- candidatos %>% 
                 filter(!APORTANTE.NORMALIZADO %in% c('IDENTIFICACIÓN INVÁLIDA', 'ANULADO',  'APORTANTE INEXISTENTE'),
                        Identificación.Normalizada > 1) 
@@ -72,7 +78,8 @@ id_contrata <- secop_temp %>%
 id_contrata <- id_contrata %>% 
                 filter(!is.na(financiador))
 
-secop_fil <- secop_all %>% filter(rep_legal_id %in% unique(id_contrata$contratista_id) | contratista_id %in% unique(id_contrata$contratista_id))
+secop_fil <- secop_all %>% 
+              filter(rep_legal_id %in% unique(id_contrata$contratista_id) | contratista_id %in% unique(id_contrata$contratista_id))
 length(unique(id_contrata$contratista_id))
 
 
@@ -84,7 +91,7 @@ length(unique(candidatos_fil$Identificación.Normalizada))
 # length(unique(blabla$Identificación.Normalizada))
 write_csv(candidatos_fil,  'data_clean/candidatos_aportantes.csv', na = '')
 
-rm(list = ls())
+#rm(list = ls())
 
 
 # Funcionamiento

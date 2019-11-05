@@ -1,7 +1,11 @@
 library(tidyverse)
+#CERRADO O ADJUDICADO
 
 
 contratos <- read_csv("data_clean/contratos_aportantes.csv", col_types = cols(.default = "c"))
+#contratos <- contratos %>% filter(proc_status == 'Cerrado')
+
+
 cont_vars <- c("cont_firma_ano", "contratista_id", "contratista_nombre", "rep_legal_id",
                "rep_legal_nombre","ent_nombre", "ent_nit", "cont_valor_tot", "moneda", "proc_tipo",
                "proc_status", "cont_tipo", "cont_objeto","cont_objeto_det", "ruta_secop1", "secop")
@@ -19,15 +23,14 @@ aportes <- aportes %>%
                                 ifelse(Corporación.o.Cargo == "Presidencia de la República", "Presidente 2018", "Regionales 2015"))
                   )
 
-aportes$Nombre.Candidato <- gsub("\\s+", " ", aportes$Nombre.Candidato)
-aportes$APORTANTE.NORMALIZADO <- gsub("\\s+", " ", aportes$APORTANTE.NORMALIZADO)
 
 aportes_cand <- aportes  %>% 
-                 group_by(campaign,  cargo = Corporación.o.Cargo, Organizacion.Politica, Elegido, Nombre.Candidato, Identificacion.Candidato, APORTANTE.NORMALIZADO, Identificación.Normalizada, Tipo.de.Identificación) %>% 
+                 group_by(campaign,  cargo = Corporación.o.Cargo, Organizacion.Politica, Elegido, Nombre.Candidato, Identificacion.Candidato, APORTANTE.NORMALIZADO, Identificación.Normalizada) %>% 
                   summarise(Valor = sum(as_number(Valor)),
                             Ciudad.Ingreso = paste(unique(Ciudad.Ingreso), collapse = ' y '),
-                            group = paste(unique(Tipo.Persona)[1], collapse = ' - '))
-
+                            group = paste(unique(Tipo.Persona)[1], collapse = ' - '),
+                            Tipo.de.Identificación = paste(unique(Tipo.de.Identificación)[1], collapse = ' - '))
+unique(aportes_cand$group)
 aportes_cand$name_cand_line <- add_break(aportes_cand$Nombre.Candidato)
 aportes_cand$name_aport_line <- add_break(aportes_cand$APORTANTE.NORMALIZADO)
 
