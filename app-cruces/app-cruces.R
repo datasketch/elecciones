@@ -16,9 +16,8 @@ ui <-
     suppressDependencies("bootstrap"),
     tags$head(
       tags$meta(name="viewport", content="width=device-width, initial-scale=1.0"),
-      tags$link(rel="stylesheet", type="text/css", href="styles.css")#,
-      # includeScript("js/iframeSizer.contentWindow.min.js"),
-      # includeScript("js/elecciones.js")
+      tags$link(rel="stylesheet", type="text/css", href="styles.css"),
+      includeScript("js/iframeSizer.contentWindow.min.js")
     ),
     div(class = 'bg-blue seccion-descripcion',
         tags$img(class = 'line-decoration', src='divider_large.png'),

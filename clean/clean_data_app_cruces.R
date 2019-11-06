@@ -29,4 +29,4 @@ aportes_cand <- aportes  %>%
 unique(aportes_cand$Tipo.Persona)
 
 
-write_csv(aportes_cand, 'data/clean/aportes.csv', na = '')
+write_csv(aportes_cand, 'data/clean/aportes.csv', na = 'Sin información')

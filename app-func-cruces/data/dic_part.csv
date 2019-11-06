@@ -1,0 +1,14 @@
+id,label,varInteres
+NOMBRE_ORGANIZACION,Nombre organización,
+id_part,id_part,
+APORTANTE,Nompbre aportante,
+IDENTIFICACION_NORM,identificacion_norm,
+CONCEPTO,Concepto,si
+DEPARTAMENTO_INGRESO,Departamento de ingreso,si
+Valor,Total aporte,
+Ciudad.Ingreso,Ciudad de ingreso,
+Tipo.Persona,Tipo de persona,si
+Tipo.de.Identificación,tipo.de.identificación,
+informe,Informe,
+secop,Secop,
+num,Aportantes a campañas,
