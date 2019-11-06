@@ -4,13 +4,14 @@ library(visNetwork)
 library(DT)
 library(dsCustom)
 library(formattable)
+
 # Data
-candidatos <- read_csv('data/candidatos.csv')
-aportes <- read_csv('data/aportes.csv')
+contratos <- read_csv('data/contratos_funcionamiento.csv')
+partidos <- read_csv('data/partidos.csv')
 nodes <- read_csv('data/nodes.csv', col_types = cols(.default = "c"))
-nodes$Valor <- as.numeric(nodes$Valor)
+nodes$valor <- as.numeric(nodes$valor)
 edges <- read_csv('data/edges.csv')
-contratos <- read_csv('data/contratos.csv')
+aportes <- read_csv('data/aportantes.csv')
 dic_contratos <- read_csv('data/dic.csv', col_types = cols(.default = "c"))
 
 ui <- 
@@ -28,13 +29,12 @@ ui <-
             div(class = 'flex justify-between items-center',
                 div(class = 'search-candidate',
                     h1(class = 'title text-aqua', 'búsqueda'),
-                    uiOutput('buscador_candidato')),
+                    uiOutput('buscador_partido')),
                 div(class = 'texto_busqueda',
                     h1(class = 'title text-aqua', 'en esta sección'),
                     p(class = 'general-text text-white',
-                      'En esta sección podrá conocer los aportantes a campañas electorales 
-                      (Territoriales 2015, Congreso y Presidencia 2018) que recibieron contratos del estado, 
-                      desde el año 2015 al 2019.'
+                      'En esta sección podrá conocer los aportantes a partidos políticos
+                       que recibieron contratos del estado, desde el año 2015 al 2019.'
                     )
                 )
             )
@@ -44,13 +44,10 @@ ui <-
         div(class = 'content',
             div(class = 'flex justify-between items-start flex-wrap',
                 div( class = 'filter-output',
-                     uiOutput('candidato_nombre')
+                     uiOutput('partido_nombre')
                 ),
                 div( class = 'filter-output',
-                     uiOutput('candidato_cargo')
-                ),
-                div( class = 'filter-output',
-                     uiOutput('candidato_campana')
+                     uiOutput('partido_informe')
                 )
             ))),
     div(class = 'summary',
@@ -59,15 +56,16 @@ ui <-
                 div(class = 'red',
                     h4('red de financiadores'),
                     div(class = 'panel',
-                        visNetworkOutput('vizRed', width = '100%', height = 715),
+                        visNetworkOutput('vizRed', width = '100%', height = 640),
                         uiOutput('legenda'))),
-                div(class = 'candidato',
-                    h4('datos del candidato'),
+                div(class = 'partido',
+                    h4('datos del partido'),
                     div(class = 'panel',
-                        uiOutput('candidato_info'))),
+                        uiOutput('partido_info'))),
                 div(class = 'contributor' ,
                     h4('datos del financiador'),
                     div(class = 'panel',
+                        verbatimTextOutput('aver'),
                         uiOutput('ficha_financiador'))),
                 div(class = 'contracting',
                     h4('información del financiador en secop'),
@@ -75,9 +73,9 @@ ui <-
                         formattableOutput('ficha_contrata'),
                         uiOutput('fecha_contr'))),
                 div(class = 'others',
-                    h4('otros candidatos financiados'),
+                    h4('otros partidos financiados'),
                     div(class = 'panel',
-                        uiOutput('otros_candidatos'))),
+                        uiOutput('otros_partidos'))),
                 div(class = 'table',
                     h4('tabla de contratos del financiador'),
                     div(class = 'panel',
@@ -100,142 +98,139 @@ ui <-
 server <-
   function(input, output, session) {
     
-    # buscador
-    
-    output$buscador_candidato <- renderUI({
-      temp_cand <- c(sort(unique(candidatos$name)), unique(candidatos$id))
-      searchInput('id_candidato', temp_cand, placeholder = 'Busca por nombre o cédula del candidato')
+    output$buscador_partido <- renderUI({
+      
+      opts <- unique(partidos$NOMBRE_ORGANIZACION)
+      searchInput('id_partido', opts, placeholder = 'Busca por nombre del partido o coalición')
     })
     
-    candidato <- reactiveValues(buscado = NULL)
+    
+    partido <- reactiveValues(buscado = NULL)
     
     observe({
-      busqueda <- input$id_candidato
+      busqueda <- input$id_partido
       if (is.null(busqueda)) return()
-      temp <- c('SERGIO FAJARDO VALDERRAMA', 'IVAN DUQUE MARQUEZ','AURELIJUS RUTENIS ANTANAS MOCKUS SIVICKAS', 'ARTURO CHAR CHALJUB', 'GABRIEL JAIME VALLEJO CHUJFI' ,'ALVARO URIBE VELEZ', 'CESAR AUGUSTO ORTIZ ZORRO', 'GUSTAVO FRANCISCO PETRO URREGO', 'ENRIQUE PEÑALOSA LONDOÑO', 'EMMANUEL ENRIQUE ARANGO GOMEZ')
+      temp <- unique(partidos$NOMBRE_ORGANIZACION)
       temp <- sample(temp, 1)
       if (busqueda == "") {
-        candidato$buscado <- temp
+        partido$buscado <- temp
       } else {
-        candidato$buscado <- busqueda
+        partido$buscado <- busqueda
       }
     })
     
     
     
     # Input buscador
-    candidato_buscado <- reactive({
-      if (is.null(candidato$buscado)) return()
-      persona <- tolower(iconv(candidato$buscado, "UTF-8", "ASCII//TRANSLIT"))
-      #if (persona == "") persona <- 'alvaro uribe velez'
-      candidatos %>% filter(name_id == persona | id == persona)
+    partido_buscado <- reactive({
+      if (is.null(partido$buscado)) return()
+      persona <- tolower(iconv(partido$buscado, "UTF-8", "ASCII//TRANSLIT"))
+      partidos$name_id <- tolower(iconv(partidos$NOMBRE_ORGANIZACION, "UTF-8", "ASCII//TRANSLIT"))
+      partidos %>% filter(name_id == persona)
     })
     
     
     
-    # Información Candidato
-    output$candidato_nombre <- renderUI({
-      dt <- candidato_buscado()
+    # Información partido
+    output$partido_nombre <- renderUI({
+      dt <- partido_buscado()
       div(
-        h3(class = 'titles-filters text-blue', 'CANDIDATO'),
+        h3(class = 'titles-filters text-blue', 'partido'),
         div(class = 'title text-blue',
-            unique(dt$name)
+            unique(dt$NOMBRE_ORGANIZACION)
         )
       )
     })
     
-    output$candidato_cargo <- renderUI({
-      dt <- candidato_buscado()
-      cargo <- unique(dt$cargo)
-      if (length(cargo) == 1) {
-        r <- HTML(paste0("<h3 class = 'titles-filters text-blue'>CARGO</h3><div class = 'title text-blue'>", cargo, "</div>"))
+    output$partido_informe <- renderUI({
+      dt <- partido_buscado()
+      informe <- unique(dt$ANO_INFORME)
+      if (length(informe) == 1) {
+        r <- HTML(paste0("<h3 class = 'titles-filters text-blue'>INFORME</h3><div class = 'title text-blue'>", informe, "</div>"))
       } else {
-        r <- selectizeInput('id_cargo',  h3(class = 'titles-filters text-blue','CARGO'), unique(dt$cargo))
+        r <- selectizeInput('id_informe',  h3(class = 'titles-filters text-blue','INFORME'), informe)
       }
       r
     })
     
     
-    data_candidato <- reactive({
-      dt <- candidato_buscado()
+    data_partido <- reactive({
+      dt <- partido_buscado()
       if (is.null(dt)) return()
-      cargo <- unique(dt$cargo)
-      if (length(cargo) == 1) {
+      informe <- unique(dt$ANO_INFORME)
+      if (length(informe) == 1) {
         dt <- dt
       } else {
-        if (is.null(input$id_cargo)) return()
-        dt <- candidato_buscado() %>% filter(cargo == input$id_cargo)
+        if (is.null(input$id_informe)) return()
+        dt <- partido_buscado() %>% filter(ANO_INFORME == input$id_informe)
       }
       dt
     })
     
-    output$candidato_campana <- renderUI({
-      dt <- data_candidato()
-      HTML(paste0("<h3 class = 'titles-filters text-blue'>CAMPAÑA</h3><div class = 'title text-blue'>", unique(dt$campaign), "</div>"))
-    })
     
     
-    
-    # ficha info candidato
-    output$candidato_info <- renderUI({
-      d_i <- data_candidato()
+    # ficha info partido
+    output$partido_info <- renderUI({
+      d_i <- data_partido()
       if (is.null(d_i)) return()
-      HTML(paste0('<div class = "info-candidato">
-                 <div class = "candidato-general">
-                  <div class = "inp-i max-sev"><span class = "ficha-titulos">Partido político</span></br><span class = "ficha-results">', d_i$party, '</span></div>
-                  <div class = "inp-i"><span class = "ficha-titulos">Elegido</span></br><span class = "ficha-results"">', d_i$elegido ,'</span></div>
-                  </div>
-                  <div class = "candidato-elegido">
+      HTML(paste0('<div class = "info-partido">
+                  <div class = "partido-elegido">
                   <div class = "inp-i max-sev"><span class = "ficha-titulos">Número Aportes</span></br><span class = "ficha-results">', d_i$total, '</span></div>
-                  
-                  <div class = "inp-i"><span class = "ficha-titulos">Valor Aportes</span></br><span class = "ficha-results">$', format(d_i$Valor, scientific = F, big.mark = ',', small.mark = '.'), '</span></div>
+                  <div class = "inp-i"><span class = "ficha-titulos">Valor Aportes</span></br><span class = "ficha-results">$', format(d_i$valor, scientific = F, big.mark = ',', small.mark = '.'), '</span></div>
                   </div>
                   </div>'))
     })
     
     
-    # candidato filtrado
-    candidato_filter <- reactive({
-      if (is.null(candidato_buscado())) return()
-      candidato <- unique(candidato_buscado()$id)
-      uni_carg <- unique(candidato_buscado()$cargo)
-      cargo <- input$id_cargo
+    # partido filtrado
+    partido_filter <- reactive({
+      if (is.null(partido_buscado())) return()
+
+      partido <- unique(partido_buscado()$id_part)
+      anios <- unique(partido_buscado()$ANO_INFORME)
+     
+      informe_sel <- input$id_informe
       
-      if (length(uni_carg) == 1)  cargo <-  uni_carg
+      if (length(anios) == 1) {
+        anio_filter <- anios
+      } else {
+        anio_filter <- informe_sel
+      }
+
+      edges$informe <- as.character(edges$informe)
 
       edges_filter <- edges %>%
-          filter(from == candidato, cargo %in% cargo) %>%
-          distinct(to, .keep_all = T)
-        nodes <- nodes %>% filter(cargo %in% cargo) %>% distinct()
- 
+                       filter(from == partido, informe ==  anio_filter)
+     
+      c(unique(edges_filter$from), unique(edges_filter$to))
       if (nrow(edges_filter) == 0) return()
       nodes_filter <- nodes %>%
-                       filter(id %in%  c(unique(edges_filter$from), unique(edges_filter$to))) %>%
-                        group_by(id, node_type) %>%
-                         dplyr::summarise(label = paste(unique(label), collapse = '-'),
-                                          group = paste(unique(group)[1], collapse = '-'),
-                                          Valor = sum(Valor)) %>%
-                           distinct(id, .keep_all = T)
-      
+        filter(id %in%  unique(c(edges_filter$from, edges_filter$to)),
+               informe == anio_filter) %>%
+        group_by(id, node_type) %>%
+        dplyr::summarise(label = paste(unique(label), collapse = '-'),
+                         group = paste(unique(group)[1], collapse = '-'),
+                         Valor = sum(valor))
+ 
       nodes_filter$borderWidth <- 1
       nodes_filter$font.size <- 30
       nodes_filter$size <- scales::rescale(nodes_filter$Valor, to = c(25, 75))
-      nodes_filter$size <- ifelse(nodes_filter$node_type == 'candidato', 85, nodes_filter$size)
+      nodes_filter$size <- ifelse(nodes_filter$node_type == 'partido', 85, nodes_filter$size)
       list(edges = edges_filter, nodes = nodes_filter)
     })
     
     output$legenda <- renderUI({
-      summ <- candidato_filter()$nodes
+      summ <- partido_filter()$nodes
       if (is.null(summ)) return()
-      
+
       summ <- summ %>%
-               group_by(group) %>% 
-                 summarise(Total = n()) %>% 
-                   filter(group != 'Candidato')
+        group_by(group) %>%
+        summarise(Total = n()) %>%
+        filter(group != 'partido')
 
       total_jud <- ifelse('Persona Jurídica' %in% summ$group, summ$Total[summ$group == 'Persona Jurídica'], 0)
       total_nat <- ifelse('Persona Natural' %in% summ$group, summ$Total[summ$group == 'Persona Natural'], 0)
-    
+
       HTML(paste0(
         '
         <div class = "border-legend">
@@ -250,24 +245,26 @@ server <-
       ))
     })
     
+
+
     # Red de aportantes con contratos
-    
+
     output$vizRed <- renderVisNetwork({
-      if (is.null(candidato_filter())) return()
-      visNetwork(candidato_filter()$nodes,  candidato_filter()$edges) %>%
+      if (is.null(partido_filter())) return()
+      visNetwork(partido_filter()$nodes,  partido_filter()$edges) %>%
         visGroups(groupname = "Persona Natural", color = "#C250C2") %>%
         visGroups(groupname = "Persona Jurídica", color = "#137FC0") %>%
-        visGroups(groupname = "Candidato", color = "#0A446B") %>%
+        visGroups(groupname = "Partido", color = "#0A446B") %>%
         visPhysics(
           stabilization = FALSE,
           barnesHut = list(
-            gravitationalConstant = -10000,
+            gravitationalConstant = -100000,
             springConstant = 0.002,
-            springLength = 100
+            springLength = 70
           )) %>%
         visInteraction(navigationButtons = TRUE) %>%
         visEvents(
-           startStabilizing = "function() {
+          startStabilizing = "function() {
             this.moveTo({scale:0.3})}",
           click = "function(nodes) {
         Shiny.onInputChange('clickNode', {nodes : nodes.nodes[0]});
@@ -275,27 +272,37 @@ server <-
         )
     })
     
-    
+
     
     # Información aportante
     aportante_filter <- reactive({
       id_click <- input$clickNode$nodes
       if (is.null(id_click)) return()
-      aportante <- aportes %>% filter(Identificación.Normalizada == id_click)
+      aportante <- aportes %>% filter(IDENTIFICACION_NORM == id_click)
       if (nrow(aportante) == 0) return()
       aportante
     })
     
     
-    # Información aporte al candidato seleccionado
-    aporte_candidato <- reactive({
-      dt <- candidato_buscado()
-      if (is.null(dt) | is.null(aportante_filter())) return()
-      id_candidato <- unique(dt$id)
-      aportante_filter() %>% filter(Identificacion.Candidato == id_candidato)
+    # Información aporte al partido seleccionado
+    aporte_partido <- reactive({
+      dt <- partido_buscado()
+      if (is.null(dt)) return()
+      id_partido <- unique(dt$id_part)
+      if (is.null(aportante_filter())) return()
+      anios <- unique(aportante_filter()$ANO_INFORME)
+      informe_sel <- input$id_informe
+      
+      if (length(anios) == 1) {
+        anio_filter <- anios
+      } else {
+        anio_filter <- informe_sel
+      }
+      
+      aportante_filter() %>% filter(id_part == id_partido, ANO_INFORME == anio_filter)
     })
     
-    
+
     # Ficha
     output$ficha_financiador <- renderUI({
       click_ref <-  HTML(
@@ -307,19 +314,19 @@ server <-
         tx <- click_ref
       } else {
         options(scipen = 9990)
-        dt <- aporte_candidato()
-        total_aporte <- format(sum(dt$Valor), big.mark = ',', small.mark = '.')
+        dt <- aporte_partido()
+        total_aporte <- format(sum(dt$valor), big.mark = ',', small.mark = '.')
         tx <- div(class = 'ficha_aportante',
                   HTML(paste0('
                   <div class = "financiador-general">
                   <div class = "inp-i" style = "width:60%"><span class = "ficha-titulos">Razón social</span> <br/>
-                  <span class = "ficha-results">', dt$APORTANTE.NORMALIZADO,'</span></div>
-                  <div class = "inp-i"><span class = "ficha-titulos">',dt$Tipo.de.Identificación, ' </span><br/>
-                  <span class = "ficha-results">', dt$Identificación.Normalizada,'</span></div>
+                  <span class = "ficha-results">', dt$APORTANTE,'</span></div>
+                  <div class = "inp-i"><span class = "ficha-titulos">',dt$TIPO_IDENTIFICACION, ' </span><br/>
+                  <span class = "ficha-results">', dt$IDENTIFICACION_NORM,'</span></div>
                   </div>
                   <div class = "financiador-elegido">
                   <div class = "inp-i" style = "width:60%"><span class = "ficha-titulos">Ciudad aporte</span><br/>
-                  <span class = "ficha-results">', dt$Ciudad.Ingreso,'</span></div> 
+                  <span class = "ficha-results">', dt$ciudad.ingreso,'</span></div> 
                   <div class = "inp-i"><span class = "ficha-titulos">Monto de financiación </span><br/> 
                   <span class = "ficha-results">$', total_aporte,'</span></div>
                   </div>')),
@@ -329,69 +336,69 @@ server <-
       tx
     })
     
-      observeEvent(input$blabla, {
-    session$sendCustomMessage(type = 'testmessage',
-      message = 'Thank you for clicking')
-  })
+    observeEvent(input$blabla, {
+      session$sendCustomMessage(type = 'testmessage',
+                                message = 'Thank you for clicking')
+    })
     
-    
-    
+
     # Red financiadores
     output$red_financiadores <- renderVisNetwork({
       info <- aportante_filter()
       if (is.null(info)) return()
       cand <- info %>%
-               group_by(id = Identificacion.Candidato, name = Nombre.Candidato, label = name_cand_line) %>%
-                summarise( Valor = sum(Valor)) %>% 
-                  mutate(group = "Candidato") 
-                 
-      aport <- info %>%
-                select(id = Identificación.Normalizada, name = APORTANTE.NORMALIZADO, group, label = name_aport_line) 
+        group_by(id = id_part, name = NOMBRE_ORGANIZACION, label = name_cand_line) %>%
+        summarise( Valor = sum(valor)) %>%
+        mutate(group = "Partido")
 
-      nodes <- bind_rows(list(Candidato = cand, Aportante = aport), .id = "node_type")
-    
+      aport <- info %>%
+        select(id = IDENTIFICACION_NORM, name = APORTANTE, group, label = name_aport_line) %>% 
+        distinct(id, .keep_all = T)
+
+      nodes <- bind_rows(list(partido = cand, Aportante = aport), .id = "node_type")
+
       nodes$Valor <- ifelse(nodes$node_type == 'Aportante', 10, nodes$Valor)
       nodes <- nodes %>% distinct(id, .keep_all = T)
-      edges <-  info[c("Identificacion.Candidato", "Identificación.Normalizada")] 
+      edges <-  info[c("id_part", "IDENTIFICACION_NORM")]
       edges <- edges %>%
-                select(from = Identificación.Normalizada, 
-                       to = Identificacion.Candidato) %>% 
-                distinct(to, .keep_all = T)
-                  
+        select(from = IDENTIFICACION_NORM,
+               to = id_part) %>%
+        distinct(to, .keep_all = T)
+
       nodes$borderWidth <- 1
       nodes$font.size <- 25
       nodes$size <- scales::rescale(nodes$Valor, to = c(25, 75))
       nodes$size <- ifelse(nodes$node_type == 'Aportante', 85, nodes$size)
-      
-        visNetwork(nodes, edges) %>%
-          visGroups(groupname = "Persona Natural", color = "#C250C2") %>%
-          visGroups(groupname = "Persona Jurídica", color = "#137FC0") %>%
-          visGroups(groupname = "Candidato", color = "#0A446B") %>%
-          visPhysics(
-            stabilization = FALSE,
-            barnesHut = list(
-              gravitationalConstant = -10000,
-              springConstant = 0.002,
-              springLength = 100
-            )) %>%
-          visInteraction(navigationButtons = TRUE)
+
+      visNetwork(nodes, edges) %>%
+        visGroups(groupname = "Persona Natural", color = "#C250C2") %>%
+        visGroups(groupname = "Persona Jurídica", color = "#137FC0") %>%
+        visGroups(groupname = "Partido", color = "#0A446B") %>%
+        visPhysics(
+          stabilization = FALSE,
+          barnesHut = list(
+            gravitationalConstant = -10000,
+            springConstant = 0.002,
+            springLength = 100
+          )) %>%
+        visInteraction(navigationButtons = TRUE)
     })
     
-    # tabla de aportantes
+    #tabla de aportantes
     output$tabla_aportantes <- renderDataTable({
       dt <- aportante_filter()
       if (is.null(dt)) return()
-      dt$Valor <- format(dt$Valor, big.mark = ',', small.mark = '.')
-      dt  <- dt %>% select('Nombre Candidato' = Nombre.Candidato,  'Partido político' = Organizacion.Politica, 'Ciudad aporte' = Ciudad.Ingreso, 'Valor aporte' = Valor, 'Campaña' = campaign, 'Cargo' = cargo, Elegido)
+      dt$valor <- format(dt$valor, big.mark = ',', small.mark = '.')
+      dt  <- dt %>% select('Nombre partido' = NOMBRE_ORGANIZACION, 'Ciudad aporte' = ciudad.ingreso,'Número de aportes' = total, 'Valor aporte' = valor)
       pg <- nrow(dt)
       if (nrow(dt) > 5) pg <- 6
       datatable(dt,
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: left;',
-                  'Table: ', htmltools::em('Información candidatos financiados')
+                  'Table: ', htmltools::em('Información partidos financiados')
                 ),
                 options = list(
-                  pageLength = pg, 
+                  pageLength = pg,
                   language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json'),
                   lengthChange = F,
                   rownames = F,
@@ -400,47 +407,32 @@ server <-
                     "$(this.api().table().header()).css({'background-color': '#4D4D4D', 'color': '#fff'});",
                     "}"),
                   searching = FALSE
-                )) %>% 
+                )) %>%
         formatStyle( 0 , target= 'row',color = '#0A446B', fontSize ='13px', lineHeight='15px')
-      
+
     })
-    
-    
-    
-    # Ficha contratos
-    contratos_info <- reactive({
-      id_aportante <-  input$clickNode$nodes
-      if (is.null(id_aportante)) return()
-      dc <- contratos %>% filter(contratista_id == id_aportante | rep_legal_id == id_aportante)
-      if (nrow(dc) == 0) return()
-      dc
-    })
-    
-  
     output$info_ver_mas <- renderUI({
       dt <- aportante_filter()
       div(
-      div(class = 'nombre-fin',
-        h3(class = 'titles-filters text-blue', 'APORTANTE'),
-        div(class = 'title text-blue',
-            unique(dt$APORTANTE.NORMALIZADO)
-        )),
-      div(class = 'results-fin',
-        div(class = 'red-aportantes panel-fin',
-      visNetworkOutput('red_financiadores', height = '100%', width = '100%')),
-      div(class = 'tabla-aportantes panel-fin', 
-       dataTableOutput('tabla_aportantes',  width = '100%'),
-       uiOutput('desc_aptr_out')
-      )))
+        div(class = 'nombre-fin',
+            h3(class = 'titles-filters text-blue', 'APORTANTE'),
+            div(class = 'title text-blue',
+                unique(dt$APORTANTE)
+            )),
+        div(class = 'results-fin',
+            div(class = 'red-aportantes panel-fin',
+                visNetworkOutput('red_financiadores', height = '100%', width = '100%')),
+            div(class = 'tabla-aportantes panel-fin',
+                dataTableOutput('tabla_aportantes',  width = '100%'),
+                uiOutput('desc_aptr_out')
+            )))
     })
-    
-    
     output$desc_aptr_out <- renderUI({
       if (is.null(aportante_filter())) return()
       if (nrow(aportante_filter()) == 0) return()
       downloadButton('descarga_info_apt', 'Descarga de vista')
     })
-    
+
     output$descarga_info_apt <- downloadHandler(
       filename = function() {
         "data-apts.csv"
@@ -449,10 +441,18 @@ server <-
         data <- aportante_filter()
         write_csv(data, file, na = '')
       }
-    ) 
-    
+    )
+
     observeEvent(input$clickNode$nodes, {
       insertUI('.modal-content', ui = uiOutput('info_ver_mas'))
+    })
+    # Ficha contratos
+    contratos_info <- reactive({
+      id_aportante <-  input$clickNode$nodes
+      if (is.null(id_aportante)) return()
+      dc <- contratos %>% filter(contratista_id == id_aportante | rep_legal_id == id_aportante)
+      if (nrow(dc) == 0) return()
+      dc
     })
     
     output$fecha_contr <- renderUI({
@@ -479,6 +479,7 @@ server <-
       resumen$Valor <- format(resumen$Valor, big.mark = ',', small.mark = '.')
       formattable::formattable(resumen)
     })
+    
     
     # imprimir contratos_info en dos tablas
     filter_secopI <- reactive({
@@ -549,7 +550,7 @@ server <-
         write_csv(data, file, na = '')
       }
     )
-  
+    
     
     filter_secopII <- reactive({
       dt <- contratos_info()
@@ -617,21 +618,21 @@ server <-
     
     
     
-    # otros candidatos financiados
-    output$otros_candidatos <- renderUI({
-      dt <- candidato_buscado()
+    # otros partidos financiados
+    output$otros_partidos <- renderUI({
+      dt <- partido_buscado()
       if (is.null(dt) | is.null(aportante_filter())) return()
-      id_candidato <- unique(dt$id)
-      info <- aportante_filter() %>% filter(Identificacion.Candidato != id_candidato)
+      id_partido <- unique(dt$id_part)
+      info <- aportante_filter() %>% filter(id_part != id_partido)
       
       if (nrow(info) == 0) {
-        res <- HTML('<div class = "ficha-results">No ha financiado otros candidatos</div>')
+        res <- HTML('<div class = "ficha-results">No ha financiado otros partidos</div>')
       } else {
         res <- map(1:nrow(info), function(i) {
           tags$button(
-            id = info$Nombre.Candidato[i],
+            id = info$NOMBRE_ORGANIZACION[i],
             class = 'others-info',
-            info$Nombre.Candidato[i]
+            info$NOMBRE_ORGANIZACION[i]
           )
         })
       }
@@ -639,10 +640,10 @@ server <-
     })
     
     observeEvent(input$last_cand, {
-      session$sendCustomMessage(type = 'otros_candidatos',
+      session$sendCustomMessage(type = 'otros_partidos',
                                 message = input$last_cand)
     })
-    
+
     
   }
 

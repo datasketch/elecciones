@@ -171,7 +171,7 @@ body {
   grid-area: red;
 }
 
-.candidato {
+.partido {
  grid-area: info;  
 }
 
@@ -234,7 +234,13 @@ body {
  margin-right: 3px;
 }
 
-#candidato_info,#otros_candidatos {
+
+#partido_info,#otros_partidos {
+  height: 33px !important;
+} 
+
+
+#otros_partidos {
   height: 110px !important;
 } 
 
@@ -250,7 +256,7 @@ body {
   width: 70%;
 }
 
-.candidato-general,.candidato-elegido,.financiador-general,.financiador-elegido{
+.partido-elegido,.financiador-general,.financiador-elegido{
   display: flex;
 }
 
@@ -268,7 +274,7 @@ h4 {
  width: 65%;
 }
 
-#otros_candidatos {
+#otros_partidos {
  display: inline-flex;  
  align-items: center;
 }

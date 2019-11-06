@@ -15,7 +15,7 @@ Shiny.addCustomMessageHandler("testmessage",
   }
 );
 
-Shiny.addCustomMessageHandler("otros_candidatos",
+Shiny.addCustomMessageHandler("otros_partidos",
   function(id) {
     var el = document.querySelector('.input-autosuggest');
     var input = el.querySelector('input');
