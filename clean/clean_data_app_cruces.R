@@ -1,15 +1,15 @@
 library(tidyverse)
 
-contratos <- read_csv("data_clean/contratos_aportantes.csv", col_types = cols(.default = "c"))
-
+#contratos <- read_csv("data_clean/contratos_aportantes.csv", col_types = cols(.default = "c"))
+contratos <- read_csv('data/secop/clean/contratos_clean.csv', col_types = cols(.default = "c"))
 cont_vars <- c("cont_firma_ano", "contratista_id", "contratista_nombre", "rep_legal_id",
                "rep_legal_nombre","ent_nombre", "ent_nit", "ent_nivel", "cont_valor_tot", "moneda", "proc_tipo",
-               "proc_status", "cont_tipo", "cont_objeto","cont_objeto_det", "grupo", "ruta_secop1", "secop")
+               "proc_status", "cont_tipo", "cont_objeto_det", "dept_ejec", "grupo", "ruta_secop1", "secop")
 
 contratos2 <- contratos %>% 
   select(one_of(cont_vars))
 
-write_csv(contratos2,  'data/clean/contratos_cruces.csv', na = '')
+write_csv(contratos2,  'data/clean/contratos_cruces.csv', na = 'Sin información')
 
 source('~/Repos/elecciones/clean/tools.R')
 aportes <- read_csv("data_clean/candidatos_aportantes.csv", col_types = cols(.default = "c"))

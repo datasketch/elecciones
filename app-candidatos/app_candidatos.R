@@ -10,7 +10,8 @@ aportes <- read_csv('data/aportes.csv')
 nodes <- read_csv('data/nodes.csv', col_types = cols(.default = "c"))
 nodes$Valor <- as.numeric(nodes$Valor)
 edges <- read_csv('data/edges.csv')
-contratos <- read_csv('data/contratos.csv')
+contratos <- read_csv('data/contratos.csv', col_types = cols(.default = "c"))
+contratos$cont_valor_tot <- as.numeric(contratos$cont_valor_tot)
 dic_contratos <- read_csv('data/dic.csv', col_types = cols(.default = "c"))
 
 ui <- 
@@ -569,7 +570,8 @@ server <-
       dt <- Filter(function(x) !all(is.na(x)), dt)
       dic <- dic_contratos %>% filter(secop ==  'dos')
       dic_filt <- data.frame(id = as.character(names(dt)))
-      dic_filt <- inner_join(dic_filt, dic)
+      dic_filt <- left_join(dic_filt, dic)
+      dic_filt$label <- coalesce(dic_filt$label, dic_filt$id)
       names(dt) <- dic_filt$label
       dt
     })

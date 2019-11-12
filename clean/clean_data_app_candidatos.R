@@ -2,13 +2,13 @@ library(tidyverse)
 #CERRADO O ADJUDICADO
 
 
-contratos <- read_csv("data_clean/contratos_aportantes.csv", col_types = cols(.default = "c"))
+#contratos <- read_csv("data_clean/contratos_aportantes.csv", col_types = cols(.default = "c"))
 #contratos <- contratos %>% filter(proc_status == 'Cerrado')
-
-
+#"cont_objeto"
+contratos <- read_csv('data/secop/clean/contratos_clean.csv', col_types = cols(.default = "c"))
 cont_vars <- c("cont_firma_ano", "contratista_id", "contratista_nombre", "rep_legal_id",
                "rep_legal_nombre","ent_nombre", "ent_nit", "cont_valor_tot", "moneda", "proc_tipo",
-               "proc_status", "cont_tipo", "cont_objeto","cont_objeto_det", "ruta_secop1", "secop")
+               "proc_status", "cont_tipo","cont_objeto_det", "ruta_secop1", "secop")
 
 contratos2 <- contratos %>% 
                select(one_of(cont_vars))
@@ -34,7 +34,7 @@ unique(aportes_cand$group)
 aportes_cand$name_cand_line <- add_break(aportes_cand$Nombre.Candidato)
 aportes_cand$name_aport_line <- add_break(aportes_cand$APORTANTE.NORMALIZADO)
 
-write_csv(aportes_cand, 'data/clean/aportes.csv', na = '')
+write_csv(aportes_cand, 'data/clean/aportes.csv', na = 'Sin información')
 
 candidatos <- aportes_cand %>% 
                group_by(id = Identificacion.Candidato, name = Nombre.Candidato,
@@ -43,7 +43,7 @@ candidatos <- aportes_cand %>%
                           Valor = sum(Valor, na.rm = T))
 candidatos$name_id <- tolower(iconv(candidatos$name, "UTF-8", "ASCII//TRANSLIT"))
 
-write_csv(candidatos, "data/clean/candidatos.csv", na = '')
+write_csv(candidatos, "data/clean/candidatos.csv", na = 'Sin información')
 
 
 candidatos <- aportes_cand[c("Identificacion.Candidato", "Nombre.Candidato",

@@ -1,0 +1,12 @@
+name: app-funcionamiento
+title: app-funcionamiento
+username:
+account: randommonkey
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1430975
+bundleId: 2583565
+url: https://randommonkey.shinyapps.io/app-funcionamiento/
+when: 1573575721.32129
+asMultiple: FALSE
+asStatic: FALSE

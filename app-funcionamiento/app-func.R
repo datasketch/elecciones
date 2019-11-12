@@ -570,7 +570,8 @@ server <-
       dt <- Filter(function(x) !all(is.na(x)), dt)
       dic <- dic_contratos %>% filter(secop ==  'dos')
       dic_filt <- data.frame(id = as.character(names(dt)))
-      dic_filt <- inner_join(dic_filt, dic)
+      dic_filt <- left_join(dic_filt, dic)
+      dic_filt$label <- coalesce(dic_filt$label, dic_filt$id)
       names(dt) <- dic_filt$label
       dt
     })

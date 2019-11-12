@@ -1,0 +1,12 @@
+name: app-func-cruces
+title: app-func-cruces
+username:
+account: randommonkey
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1430933
+bundleId: 2583643
+url: https://randommonkey.shinyapps.io/app-func-cruces/
+when: 1573577021.6032
+asMultiple: FALSE
+asStatic: FALSE

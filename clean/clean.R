@@ -109,3 +109,25 @@ write_csv(secop_func, 'data_clean/secop_filter_funcionamiento.csv', na = '')
 
 length(unique(func_sec$IDENTIFICACION_NORM))
 
+
+
+rm(list = ls())
+
+secop <- read_csv('data/secop/clean/CONTRATOS-ACTUALIZADO.csv', col_types = cols(.default = "c"))
+secop <- secop[-nrow(secop),-92]
+secop <- secop %>% filter(`Estado del Proceso` != "Cancelado")
+secop$`DUPLICIDAD CONTRATO`[is.na(secop$`DUPLICIDAD CONTRATO`)] <- 'Sin información'
+unique(secop$`DUPLICIDAD CONTRATO`)
+secop <- secop %>% filter(`DUPLICIDAD CONTRATO` != 'REPETIDO-1')
+secop <- secop %>% select(-`Tipo de Contrato`)
+secop <- secop %>% plyr::rename(c('TIPO-CONTRATO-REF' = 'Tipo de Contrato'))
+
+dic_secop <- read_csv('data/secop/clean/dic.csv')
+dic_secop <- dic_secop %>% filter(secop == 'uno') %>% distinct(id, .keep_all = T)
+varInf <- data.frame(label = names(secop))
+dic_aag <- varInf %>% left_join(dic_secop)
+dic_aag$id <- coalesce(dic_aag$id, dic_aag$label)
+names(secop) <- dic_aag$id
+secop$moneda[is.na(secop$moneda)] <- "No Definida"
+
+write_csv(secop, 'data/secop/clean/contratos_clean.csv')
