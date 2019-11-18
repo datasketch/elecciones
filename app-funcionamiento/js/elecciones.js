@@ -1,5 +1,5 @@
 $(document).on('click', '.others-info', function () {
-  Shiny.setInputValue("last_cand", this.id, {priority: "event"});
+  Shiny.setInputValue("last_ent", this.id, {priority: "event"});
 });
 
 

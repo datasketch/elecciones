@@ -33,9 +33,8 @@ ui <-
                 div(class = 'texto_busqueda',
                     h1(class = 'title text-aqua', 'en esta sección'),
                     p(class = 'general-text text-white',
-                      'En esta sección podrá conocer los aportantes a campañas electorales 
-                      (Territoriales 2015, Congreso y Presidencia 2018) que recibieron contratos del estado, 
-                      desde el año 2015 al 2019.'
+                      'Podrás conocer los financiadores de campañas electorales (Territoriales 2015, Congreso y
+                      Presidencia 2018) que tuvieron contratos con el Estado entre los años 2015 y 2019.'
                     )
                 )
             )
@@ -63,7 +62,7 @@ ui <-
                         visNetworkOutput('vizRed', width = '100%', height = 715),
                         uiOutput('legenda'))),
                 div(class = 'candidato',
-                    h4('datos del candidato'),
+                    h4('otros datos del candidato'),
                     div(class = 'panel',
                         uiOutput('candidato_info'))),
                 div(class = 'contributor' ,
@@ -189,7 +188,7 @@ server <-
                   <div class = "candidato-elegido">
                   <div class = "inp-i max-sev"><span class = "ficha-titulos">Número Aportes</span></br><span class = "ficha-results">', d_i$total, '</span></div>
                   
-                  <div class = "inp-i"><span class = "ficha-titulos">Valor Aportes</span></br><span class = "ficha-results">$', format(d_i$Valor, scientific = F, big.mark = ',', small.mark = '.'), '</span></div>
+                  <div class = "inp-i"><span class = "ficha-titulos">Total de aportes recibidos</span></br><span class = "ficha-results">$', format(d_i$Valor, scientific = F, big.mark = ',', small.mark = '.'), '</span></div>
                   </div>
                   </div>'))
     })
@@ -203,20 +202,20 @@ server <-
       cargo <- input$id_cargo
       
       if (length(uni_carg) == 1)  cargo <-  uni_carg
-
+      
       edges_filter <- edges %>%
-          filter(from == candidato, cargo %in% cargo) %>%
-          distinct(to, .keep_all = T)
-        nodes <- nodes %>% filter(cargo %in% cargo) %>% distinct()
- 
+        filter(from == candidato, cargo %in% cargo) %>%
+        distinct(to, .keep_all = T)
+      nodes <- nodes %>% filter(cargo %in% cargo) %>% distinct()
+      
       if (nrow(edges_filter) == 0) return()
       nodes_filter <- nodes %>%
-                       filter(id %in%  c(unique(edges_filter$from), unique(edges_filter$to))) %>%
-                        group_by(id, node_type) %>%
-                         dplyr::summarise(label = paste(unique(label), collapse = '-'),
-                                          group = paste(unique(group)[1], collapse = '-'),
-                                          Valor = sum(Valor)) %>%
-                           distinct(id, .keep_all = T)
+        filter(id %in%  c(unique(edges_filter$from), unique(edges_filter$to))) %>%
+        group_by(id, node_type) %>%
+        dplyr::summarise(label = paste(unique(label), collapse = '-'),
+                         group = paste(unique(group)[1], collapse = '-'),
+                         Valor = sum(Valor)) %>%
+        distinct(id, .keep_all = T)
       
       nodes_filter$borderWidth <- 1
       nodes_filter$font.size <- 30
@@ -230,13 +229,13 @@ server <-
       if (is.null(summ)) return()
       
       summ <- summ %>%
-               group_by(group) %>% 
-                 summarise(Total = n()) %>% 
-                   filter(group != 'Candidato')
-
+        group_by(group) %>% 
+        summarise(Total = n()) %>% 
+        filter(group != 'Candidato')
+      
       total_jud <- ifelse('Persona Jurídica' %in% summ$group, summ$Total[summ$group == 'Persona Jurídica'], 0)
       total_nat <- ifelse('Persona Natural' %in% summ$group, summ$Total[summ$group == 'Persona Natural'], 0)
-    
+      
       HTML(paste0(
         '
         <div class = "border-legend">
@@ -268,7 +267,7 @@ server <-
           )) %>%
         visInteraction(navigationButtons = TRUE) %>%
         visEvents(
-           startStabilizing = "function() {
+          startStabilizing = "function() {
             this.moveTo({scale:0.3})}",
           click = "function(nodes) {
         Shiny.onInputChange('clickNode', {nodes : nodes.nodes[0]});
@@ -276,7 +275,9 @@ server <-
         )
     })
     
-    
+    observe({
+      if (!is.null(input$clickNode)) print(input$clickNode)
+    })
     
     # Información aportante
     aportante_filter <- reactive({
@@ -330,10 +331,10 @@ server <-
       tx
     })
     
-      observeEvent(input$blabla, {
-    session$sendCustomMessage(type = 'testmessage',
-      message = 'Thank you for clicking')
-  })
+    observeEvent(input$blabla, {
+      session$sendCustomMessage(type = 'testmessage',
+                                message = 'Thank you for clicking')
+    })
     
     
     
@@ -342,40 +343,40 @@ server <-
       info <- aportante_filter()
       if (is.null(info)) return()
       cand <- info %>%
-               group_by(id = Identificacion.Candidato, name = Nombre.Candidato, label = name_cand_line) %>%
-                summarise( Valor = sum(Valor)) %>% 
-                  mutate(group = "Candidato") 
-                 
+        group_by(id = Identificacion.Candidato, name = Nombre.Candidato, label = name_cand_line) %>%
+        summarise( Valor = sum(Valor)) %>% 
+        mutate(group = "Candidato") 
+      
       aport <- info %>%
-                select(id = Identificación.Normalizada, name = APORTANTE.NORMALIZADO, group, label = name_aport_line) 
-
+        select(id = Identificación.Normalizada, name = APORTANTE.NORMALIZADO, group, label = name_aport_line) 
+      
       nodes <- bind_rows(list(Candidato = cand, Aportante = aport), .id = "node_type")
-    
+      
       nodes$Valor <- ifelse(nodes$node_type == 'Aportante', 10, nodes$Valor)
       nodes <- nodes %>% distinct(id, .keep_all = T)
       edges <-  info[c("Identificacion.Candidato", "Identificación.Normalizada")] 
       edges <- edges %>%
-                select(from = Identificación.Normalizada, 
-                       to = Identificacion.Candidato) %>% 
-                distinct(to, .keep_all = T)
-                  
+        select(from = Identificación.Normalizada, 
+               to = Identificacion.Candidato) %>% 
+        distinct(to, .keep_all = T)
+      
       nodes$borderWidth <- 1
       nodes$font.size <- 25
       nodes$size <- scales::rescale(nodes$Valor, to = c(25, 75))
       nodes$size <- ifelse(nodes$node_type == 'Aportante', 85, nodes$size)
       
-        visNetwork(nodes, edges) %>%
-          visGroups(groupname = "Persona Natural", color = "#C250C2") %>%
-          visGroups(groupname = "Persona Jurídica", color = "#137FC0") %>%
-          visGroups(groupname = "Candidato", color = "#0A446B") %>%
-          visPhysics(
-            stabilization = FALSE,
-            barnesHut = list(
-              gravitationalConstant = -10000,
-              springConstant = 0.002,
-              springLength = 100
-            )) %>%
-          visInteraction(navigationButtons = TRUE)
+      visNetwork(nodes, edges) %>%
+        visGroups(groupname = "Persona Natural", color = "#C250C2") %>%
+        visGroups(groupname = "Persona Jurídica", color = "#137FC0") %>%
+        visGroups(groupname = "Candidato", color = "#0A446B") %>%
+        visPhysics(
+          stabilization = FALSE,
+          barnesHut = list(
+            gravitationalConstant = -10000,
+            springConstant = 0.002,
+            springLength = 100
+          )) %>%
+        visInteraction(navigationButtons = TRUE)
     })
     
     # tabla de aportantes
@@ -383,26 +384,28 @@ server <-
       dt <- aportante_filter()
       if (is.null(dt)) return()
       dt$Valor <- format(dt$Valor, big.mark = ',', small.mark = '.')
-      dt  <- dt %>% select('Nombre Candidato' = Nombre.Candidato,  'Partido político' = Organizacion.Politica, 'Ciudad aporte' = Ciudad.Ingreso, 'Valor aporte' = Valor, 'Campaña' = campaign, 'Cargo' = cargo, Elegido)
+      dt  <- dt %>% select('Candidato financiado' = Nombre.Candidato,  'Partido político' = Organizacion.Politica, 'Ciudad aporte' = Ciudad.Ingreso, 'Valor aporte' = Valor, 'Campaña' = campaign, 'Cargo' = cargo, Elegido)
       pg <- nrow(dt)
       if (nrow(dt) > 5) pg <- 6
       datatable(dt,
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: left;',
-                  'Table: ', htmltools::em('Información candidatos financiados')
+                  'Tabla: ', htmltools::em('Información candidatos financiados')
                 ),
+                rownames = F,
                 options = list(
                   pageLength = pg, 
                   language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json'),
                   lengthChange = F,
-                  rownames = F,
+                  scrollX = T,
+                  scrollY = T,
                   initComplete = JS(
                     "function(settings, json) {",
-                    "$(this.api().table().header()).css({'background-color': '#4D4D4D', 'color': '#fff'});",
+                    "$(this.api().table().header()).css({'background-color': '#4D4D4D', 'color': '#fff', 'font-size':'17px'});",
                     "}"),
                   searching = FALSE
                 )) %>% 
-        formatStyle( 0 , target= 'row',color = '#0A446B', fontSize ='13px', lineHeight='15px')
+        formatStyle( 0 , target= 'row',color = '#0A446B')
       
     })
     
@@ -417,22 +420,22 @@ server <-
       dc
     })
     
-  
+    
     output$info_ver_mas <- renderUI({
       dt <- aportante_filter()
       div(
-      div(class = 'nombre-fin',
-        h3(class = 'titles-filters text-blue', 'APORTANTE'),
-        div(class = 'title text-blue',
-            unique(dt$APORTANTE.NORMALIZADO)
-        )),
-      div(class = 'results-fin',
-        div(class = 'red-aportantes panel-fin',
-      visNetworkOutput('red_financiadores', height = '100%', width = '100%')),
-      div(class = 'tabla-aportantes panel-fin', 
-       dataTableOutput('tabla_aportantes',  width = '100%'),
-       uiOutput('desc_aptr_out')
-      )))
+        div(class = 'nombre-fin',
+            h3(class = 'titles-filters text-blue', 'FINANCIADOR'),
+            div(class = 'title text-blue',
+                unique(dt$APORTANTE.NORMALIZADO)
+            )),
+        div(class = 'results-fin',
+            div(class = 'red-aportantes panel-fin',
+                visNetworkOutput('red_financiadores', height = '100%', width = '100%')),
+            div(class = 'tabla-aportantes panel-fin', 
+                dataTableOutput('tabla_aportantes',  width = '100%'),
+                uiOutput('desc_aptr_out')
+            )))
     })
     
     
@@ -474,8 +477,8 @@ server <-
       if (is.null(d_c)) return()
       options(scipen = 9999)
       resumen <- contratos_info() %>% 
-        group_by(Secop = secop, Moneda = moneda) %>% 
-        dplyr::summarise(Valor = sum(as.numeric(cont_valor_tot), na.rm = T), Total = n()) %>% 
+        group_by(SECOP = secop, Moneda = moneda) %>% 
+        dplyr::summarise(Valor = sum(as.numeric(cont_valor_tot), na.rm = T), `Total de contratos` = n()) %>% 
         arrange(-Valor)
       resumen$Valor <- format(resumen$Valor, big.mark = ',', small.mark = '.')
       formattable::formattable(resumen)
@@ -517,20 +520,22 @@ server <-
       datatable(dt,
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: left;',
-                  'Table 1: ', htmltools::em('Información registrada en Secop 1')
+                  'Tabla 1: ', htmltools::em('Información registrada en SECOP 1')
                 ),
+                rownames = F,
                 options = list(
                   pageLength = pg, 
+                  scrollX = T,
+                  scrollY = T,
                   language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json'),
                   lengthChange = F,
-                  rownames = F,
                   initComplete = JS(
                     "function(settings, json) {",
                     "$(this.api().table().header()).css({'background-color': '#0A446B', 'color': '#fff'});",
                     "}"),
                   searching = FALSE
                 )) %>% 
-        formatStyle( 0, target= 'row',color = '#0A446B', fontSize ='11px', lineHeight='15px')
+        formatStyle( 0, target= 'row',color = '#0A446B', fontSize ='13px', lineHeight='15px')
       
     })
     
@@ -550,7 +555,7 @@ server <-
         write_csv(data, file, na = '')
       }
     )
-  
+    
     
     filter_secopII <- reactive({
       dt <- contratos_info()
@@ -584,20 +589,22 @@ server <-
       datatable(dt,
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: left;',
-                  'Table 2: ', htmltools::em('Información registrada en Secop 2')
+                  'Tabla 2: ', htmltools::em('Información registrada en SECOP 2')
                 ),
+                rownames = F,
                 options = list(
                   pageLength = pg, 
                   language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json'),
                   lengthChange = F,
-                  rownames = F,
+                  scrollX = T,
+                  scrollY = T,
                   initComplete = JS(
                     "function(settings, json) {",
                     "$(this.api().table().header()).css({'background-color': '#0A446B', 'color': '#fff'});",
                     "}"),
                   searching = FALSE
                 )) %>% 
-        formatStyle( 0 , target= 'row',color = '#0A446B', fontSize ='11px', lineHeight='15px')
+        formatStyle( 0 , target= 'row',color = '#0A446B', fontSize ='13px', lineHeight='15px')
       
     })
     

@@ -25,9 +25,9 @@ ui <-
                 div(class = 'texto-descripcion',
                     h1(class = 'title text-aqua', 'en esta sección'),
                     p(class = 'general-text text-white',
-                      'podrás conocer los contratistas de la base de datos de
-                       SECOP que han financiado candidaturas a cargos populares
-                       en los últimos períodos electorales.'
+                      'Podrás conocer información agregada sobre los financiadores de campañas políticas que 
+                      recibieron contratos estatales entre los años 2015 y 2019
+'
                     )
                 )
             )

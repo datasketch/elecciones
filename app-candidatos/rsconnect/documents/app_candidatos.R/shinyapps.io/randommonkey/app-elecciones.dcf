@@ -5,8 +5,8 @@ account: randommonkey
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1355177
-bundleId: 2583545
+bundleId: 2598503
 url: https://randommonkey.shinyapps.io/app-elecciones/
-when: 1573575562.39692
+when: 1574106795.44845
 asMultiple: FALSE
 asStatic: FALSE
