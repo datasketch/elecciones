@@ -33,8 +33,7 @@ ui <-
                 div(class = 'texto_busqueda',
                     h1(class = 'title text-aqua', 'en esta sección'),
                     p(class = 'general-text text-white',
-                      'En esta sección podrá conocer los aportantes a partidos políticos
-                       que recibieron contratos del estado, desde el año 2015 al 2019.'
+                      'Podrás conocer los financiadores de partidos políticos que tuvieron contratos con el Estado entre 2015 y 2019'
                     )
                 )
             )
@@ -176,7 +175,7 @@ server <-
       HTML(paste0('<div class = "info-partido">
                   <div class = "partido-elegido">
                   <div class = "inp-i max-sev"><span class = "ficha-titulos">Número Aportes</span></br><span class = "ficha-results">', d_i$total, '</span></div>
-                  <div class = "inp-i"><span class = "ficha-titulos">Valor Aportes</span></br><span class = "ficha-results">$', format(d_i$valor, scientific = F, big.mark = ',', small.mark = '.'), '</span></div>
+                  <div class = "inp-i"><span class = "ficha-titulos">Total aportes recibidos</span></br><span class = "ficha-results">$', format(d_i$valor, scientific = F, big.mark = ',', small.mark = '.'), '</span></div>
                   </div>
                   </div>'))
     })
@@ -389,26 +388,27 @@ server <-
       dt <- aportante_filter()
       if (is.null(dt)) return()
       dt$valor <- format(dt$valor, big.mark = ',', small.mark = '.')
-      dt  <- dt %>% select('Nombre partido' = NOMBRE_ORGANIZACION, 'Ciudad aporte' = ciudad.ingreso,'Número de aportes' = total, 'Valor aporte' = valor)
+      dt  <- dt %>% select('Nombre partido' = NOMBRE_ORGANIZACION, 'Ciudad aporte' = ciudad.ingreso,'Número de aportes' = total, 'Total aportes recibidos' = valor)
       pg <- nrow(dt)
       if (nrow(dt) > 5) pg <- 6
       datatable(dt,
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: left;',
-                  'Table: ', htmltools::em('Información partidos financiados')
+                  'Tabla: ', htmltools::em('Información partidos financiados')
                 ),
+                rownames = F,
                 options = list(
                   pageLength = pg,
                   language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json'),
                   lengthChange = F,
-                  rownames = F,
+                  scrollX = T,
+                  scrollY = T,
                   initComplete = JS(
                     "function(settings, json) {",
                     "$(this.api().table().header()).css({'background-color': '#4D4D4D', 'color': '#fff'});",
                     "}"),
                   searching = FALSE
-                )) %>%
-        formatStyle( 0 , target= 'row',color = '#0A446B', fontSize ='13px', lineHeight='15px')
+                )) 
 
     })
     output$info_ver_mas <- renderUI({
@@ -473,10 +473,11 @@ server <-
       if (is.null(d_c)) return()
       options(scipen = 9999)
       resumen <- contratos_info() %>% 
-        group_by(Secop = secop, Moneda = moneda) %>% 
-        dplyr::summarise(Valor = sum(as.numeric(cont_valor_tot), na.rm = T), Total = n()) %>% 
+        group_by(SECOP = secop, Moneda = moneda) %>% 
+        dplyr::summarise(Valor = sum(as.numeric(cont_valor_tot), na.rm = T),  `Total de contratos` = n()) %>% 
         arrange(-Valor)
       resumen$Valor <- format(resumen$Valor, big.mark = ',', small.mark = '.')
+      resumen <- resumen %>% plyr::rename(c('Valor' = 'Total valor de contratos'))
       formattable::formattable(resumen)
     })
     
@@ -517,20 +518,22 @@ server <-
       datatable(dt,
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: left;',
-                  'Table 1: ', htmltools::em('Información registrada en Secop 1')
+                  'Tabla 1: ', htmltools::em('Información registrada en SECOP 1')
                 ),
+                rownames = F,
                 options = list(
                   pageLength = pg, 
                   language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json'),
                   lengthChange = F,
-                  rownames = F,
+                  scrollX = T,
+                  scrollY = T,
                   initComplete = JS(
                     "function(settings, json) {",
                     "$(this.api().table().header()).css({'background-color': '#0A446B', 'color': '#fff'});",
                     "}"),
                   searching = FALSE
                 )) %>% 
-        formatStyle( 0, target= 'row',color = '#0A446B', fontSize ='11px', lineHeight='15px')
+        formatStyle( 0, target= 'row',color = '#0A446B', fontSize ='13px', lineHeight='15px')
       
     })
     
@@ -584,20 +587,22 @@ server <-
       datatable(dt,
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: left;',
-                  'Table 2: ', htmltools::em('Información registrada en Secop 2')
+                  'Tabla 2: ', htmltools::em('Información registrada en SECOP 2')
                 ),
+                rownames = F,
                 options = list(
                   pageLength = pg, 
                   language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json'),
                   lengthChange = F,
-                  rownames = F,
+                  scrollX = T,
+                  scrollY = T,
                   initComplete = JS(
                     "function(settings, json) {",
                     "$(this.api().table().header()).css({'background-color': '#0A446B', 'color': '#fff'});",
                     "}"),
                   searching = FALSE
                 )) %>% 
-        formatStyle( 0 , target= 'row',color = '#0A446B', fontSize ='11px', lineHeight='15px')
+        formatStyle( 0 , target= 'row',color = '#0A446B', fontSize ='13px', lineHeight='15px')
       
     })
     

@@ -26,9 +26,7 @@ ui <-
             div(class = 'texto-descripcion',
                 h1(class = 'title text-aqua', 'en esta sección'),
                 p(class = 'general-text text-white',
-                  'podrás conocer los contratistas de la base de datos de
-                       SECOP que han financiado partidos a cargos populares
-                       en los últimos períodos electorales.'
+                  'Podrás conocer información agregada sobre los financiadores de partidos políticos que recibieron contratos estatales entre los años 2015 y 2019'
                 )
             )
         )
@@ -74,7 +72,7 @@ server <-
     
     
     output$legal_secop <- renderUI({
-      radioButtons(inputId = 'id_legal', HTML("<div class = 'title-filter text-blue'> Tipo de relación</div>"), c('Contratista' = 'contratista_id', 'Representante' = 'rep_legal_id'), inline = T)
+      radioButtons(inputId = 'id_legal', HTML("<div class = 'title-filter text-blue'> Relación del financiador</div>"), c('Contratista' = 'contratista_id', 'Representante Legal' = 'rep_legal_id'), inline = T)
     })
     
     
@@ -190,7 +188,7 @@ server <-
       dic_all <- bind_rows(dic_candts, dic_contratos)
 
       var_el <- list(prefix = dic_all$label[dic_all$id == var_int][1],
-                     suffix = ifelse(leg_con == 'rep_legal', 'representantes', 'contratistas'))
+                     suffix = ifelse(leg_con == 'rep_legal_id', 'representantes', 'contratistas'))
 
       dic_viz <- dic_all %>% distinct(id, .keep_all = T)
       dic_viz <- inner_join(data.frame(id = names(viz_dt)), dic_viz)
@@ -213,7 +211,16 @@ server <-
       if (is.null(var_int)) return()
       leg_con <-  data_viz()$selec$suffix
       if (is.null(leg_con)) return()
-      tx <- paste0(var_int, ' en donde los financiadores ejecutan contratos como ', leg_con)
+      if (sum(var_int %in% c('Nivel Entidad', 'Modalidad de contrato', 'Estado del Proceso', 'Departamento Ejecución', 'Grupo')) == 1) {
+        tx <- paste0('Número de financiadores que ejecutan contratos con el estado como ', leg_con, ' por ', var_int)   
+      } else if (sum(var_int %in% c('Genero')) == 1) {
+        tx <- paste0('Candidatos por género cuyos financiadores ejecutan contratos con el estado como ', leg_con)
+      } else if (sum(var_int %in% c('Elegido')) == 1) {
+        tx <- paste0('Candidatos elegidos cuyos financiadores ejecutan contratos con el estado como ', leg_con)
+      } else {
+        tx <- paste0(var_int, ' de los financiadores que ejecutan contratos con el estado como ', leg_con)
+      }
+      
       tx
     })
 
@@ -295,7 +302,7 @@ server <-
       anios <- input$id_anio
       if (is.null(anios)) return()
 
-      if (!is.null(anio_sel)) dt <- dt %>%  filter(`Anno Firma del Contrato` %in% anio_sel)
+      if (!is.null(anio_sel)) dt <- dt %>%  filter(`Año Firma del Contrato` %in% anio_sel)
 
 
       if (is.null(var_sel)) {
@@ -320,7 +327,8 @@ server <-
       if (is.null(dt)) return()
       pg <- nrow(dt)
       if (nrow(dt) > 10) pg <- 11
-      #dt$`Total valor del contrato` <- format(dt$`Total valor del contrato`,big.mark = ',', small.mark = '.')
+      options(scipen = 9999)
+      dt$`Total valor del contrato` <- format(dt$`Total valor del contrato`,big.mark = ',', small.mark = '.')
       datatable(dt,
                 options = list(
                   pageLength = pg,
@@ -333,7 +341,8 @@ server <-
                     "}"),
                   searching = FALSE
                 )) %>%
-        formatStyle( 0 , target= 'row',color = '#0A446B', fontSize ='11px', lineHeight='15px')
+        formatStyle( 0 , target= 'row',color = '#0A446B', fontSize ='13px', lineHeight='15px') %>% 
+        formatStyle(c(1:dim(dt)[2]),  textAlign = 'right')
 
     })
 

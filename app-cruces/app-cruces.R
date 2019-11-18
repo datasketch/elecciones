@@ -74,7 +74,7 @@ server <-
     
     
     output$legal_secop <- renderUI({
-       radioButtons(inputId = 'id_legal', HTML("<div class = 'title-filter text-blue'> Relación del financiador</div>"), c('Contratista' = 'contratista_id', 'Representante' = 'rep_legal_id'), inline = T)
+       radioButtons(inputId = 'id_legal', HTML("<div class = 'title-filter text-blue'> Relación del financiador</div>"), c('Contratista' = 'contratista_id', 'Representante Legal' = 'rep_legal_id'), inline = T)
     })
     
     
@@ -339,7 +339,7 @@ server <-
       anios <- input$id_anio
       if (is.null(anios)) return()
 
-      if (!is.null(anio_sel)) dt <- dt %>%  filter(`Anno Firma del Contrato` %in% anio_sel)
+      if (!is.null(anio_sel)) dt <- dt %>%  filter(`Año Firma del Contrato` %in% anio_sel)
 
 
       if (is.null(var_sel)) {
