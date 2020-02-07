@@ -8,7 +8,7 @@ ent_nombre,Nombre de la Entidad,uno,
 ent_nit,NIT de la Entidad,uno,
 ent_code,Código de la Entidad,uno,
 proc_tipo_id,ID Tipo de Proceso,uno,
-proc_tipo,Modalidad de contrato,uno,no
+proc_tipo,Modalidad de contrato,uno,
 proc_status,Estado del Proceso,uno,si
 cont_directa_otras_causas,Causal de Otras Formas de Contratacion Directa,uno,
 cont_reg_id,ID Regimen de Contratacion,uno,

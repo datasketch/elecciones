@@ -374,11 +374,15 @@ server <-
           barnesHut = list(
             gravitationalConstant = -10000,
             springConstant = 0.002,
-            springLength = 100
+            springLength = 10
           )) %>%
-        visInteraction(navigationButtons = TRUE)
+        visInteraction(navigationButtons = TRUE) %>%
+        visEvents(
+          startStabilizing = "function() {
+            this.moveTo({scale:0.01})}")
     })
     
+
     # tabla de aportantes
     output$tabla_aportantes <- renderDataTable({
       dt <- aportante_filter()

@@ -380,7 +380,10 @@ server <-
             springConstant = 0.002,
             springLength = 100
           )) %>%
-        visInteraction(navigationButtons = TRUE)
+        visInteraction(navigationButtons = TRUE) %>%
+        visEvents(
+          startStabilizing = "function() {
+            this.moveTo({scale:0.01})}")
     })
     
     #tabla de aportantes

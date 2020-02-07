@@ -13,16 +13,14 @@ html {
 
 body {
   margin: 0;
+  overflow: hidden;
+  background-color: #F8F8F8
 }
 
 .bg-blue {
   background-color: #0A446B;
 }
 
-.content {
-  margin: 0 auto;
-  width: 90%;
-}
 
 .title {
   font-weight: 800;
@@ -95,6 +93,7 @@ body {
 }
 
 .filters {
+  background: #fff;
   padding: 50px 0;
 }
 

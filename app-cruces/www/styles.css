@@ -21,6 +21,8 @@ html {
 
 body {
   margin: 0;
+  background: #F8F8F8;
+  overflow: hidden;
 }
 
 
@@ -64,7 +66,7 @@ h4 {
 }
 
 .seccion-descripcion {
-  padding: 100px 0;
+  padding: 20px 0 50px 0;
   position: relative;
 }
 
@@ -159,7 +161,7 @@ h4 {
 
 .results {
   display: grid;
-  grid-template-columns: 25% 70%;
+  grid-template-columns: 27% 68%;
   grid-template-areas: "filtro viz"
                        "tabla tabla";
  grid-gap: 70px;

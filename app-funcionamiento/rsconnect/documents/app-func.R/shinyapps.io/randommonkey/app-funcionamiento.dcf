@@ -5,8 +5,8 @@ account: randommonkey
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1430975
-bundleId: 2599002
+bundleId: 2622894
 url: https://randommonkey.shinyapps.io/app-funcionamiento/
-when: 1574118103.21399
+when: 1574889084.09294
 asMultiple: FALSE
 asStatic: FALSE
