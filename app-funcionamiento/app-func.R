@@ -2,7 +2,7 @@ library(shiny)
 library(tidyverse)
 library(visNetwork)
 library(DT)
-library(dsCustom)
+library(shinyinvoer)
 library(formattable)
 
 # Data

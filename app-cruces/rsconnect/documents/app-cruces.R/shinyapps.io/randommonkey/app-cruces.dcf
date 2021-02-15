@@ -5,8 +5,8 @@ account: randommonkey
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1424742
-bundleId: 2662525
+bundleId: 4225203
 url: https://randommonkey.shinyapps.io/app-cruces/
-when: 1576171305.07999
+when: 1613392979.11219
 asMultiple: FALSE
 asStatic: FALSE

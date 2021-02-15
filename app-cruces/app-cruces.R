@@ -3,7 +3,7 @@ library(tidyverse)
 library(DT)
 library(formattable)
 library(hgchmagic)
-library(dsAppWidgets)
+library(shinyinvoer)
 
 # Data
 contratos <- read_csv('data/contratos_cruces.csv')
@@ -233,7 +233,9 @@ server <-
    
    output$vizOptions <- renderUI({
       charts <- c("bar", "line")
-      buttonImageInput(inputId = "last_chart", charts, charts, file = "icons/", format = "svg", classImg = "imgStyle")
+      shinyinvoer::buttonImageInput(inputId = "last_chart", label = " ", 
+                                    images = charts,
+                                    path = "icons/")
    })
 
    titulo <- reactive({
@@ -276,7 +278,7 @@ server <-
          myFunc <- JS("function(event) {Shiny.onInputChange('hcClicked',  {id:event.point.name, timestamp: new Date().getTime()});}")
       } 
       
-      if (chart == 'line' & length(anios) == 1) myFunc <- JS("function(event) {Shiny.onInputChange('hcClicked',  {id:event.point.category.name, timestamp: new Date().getTime()});}")
+      if (chart == 'line' & length(anios) == 1) myFunc <- JS("function(event) {Shiny.onInputChange('hcClicked',  {id:event.point.name, timestamp: new Date().getTime()});}")
       if (chart == 'line' & length(anios) > 1)  myFunc <- JS("function(event) {Shiny.onInputChange('hcClicked',  {cat:event.point.category.name, id:this.name, timestamp: new Date().getTime()});}")
       
 
@@ -299,23 +301,25 @@ server <-
                        agg_text = " ",
                        export =  TRUE,
                        border_color = '#000000',
-                       theme = tma(custom = list(stylesX_lineWidth = 0, 
+                       theme =  list(stylesX_lineWidth = 0, 
                                                  #height = 570,
                                                  colors = colores,
                                                  font_family = "Raleway",
                                                  font_size = '11px',
                                                  font_color = '#000000',
                                                  stylesTitleY_fontWeight = 'bold',
-                                                 stylesTitleX_fontWeight = 'bold')))
+                                                 stylesTitleX_fontWeight = 'bold'))
       
       if (nrow(dt_viz) == 0) return('No hay aportantes con las caracteristicas elegidas')
       if (length(anios) == 1) {
          dt_viz <- dt_viz[,-1]
          viz <- paste0('hgch_', chart, '_CatNum')
+         if (chart == 'line') viz <- paste0('hgch_', chart, '_YeaNum')
          v <-  do.call(viz, c(list(data = dt_viz, opts = opts_viz)))
       } else {
          viz <- paste0('hgch_', chart, '_CatCatNum')
          if (chart == 'line') {
+            viz <- paste0('hgch_', chart, '_CatYeaNum')
             dt_viz <- dt_viz[,c(2,1,3)]
          }
          v <-  do.call(viz, c(list(data = dt_viz, opts = opts_viz)))

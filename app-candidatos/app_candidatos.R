@@ -2,7 +2,7 @@ library(shiny)
 library(tidyverse)
 library(visNetwork)
 library(DT)
-library(dsCustom)
+library(shinyinvoer)
 library(formattable)
 # Data
 candidatos <- read_csv('data/candidatos.csv')
